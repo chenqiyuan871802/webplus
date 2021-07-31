@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>设备列表</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../layuiadmin/style/admin.css" media="all">
+  <link rel="stylesheet" href="../css/iconfont.css" media="all">
+</head>
+<style>
+  .layui-row {
+    background-color: #fff;
+  }
+
+  /* 标题 */
+  .layui-row>.layui-col-md12>h2 {
+    color: #333;
+    padding: 5px 20px;
+  }
+
+  /* 圆形流程 */
+  .pto-box {
+    display: flex;
+    padding: 20px;
+  }
+
+  /* 外层box */
+  .pto-box>div {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .pto-box>.circle-box>.text,
+  .pto-box>.arrow-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 内容box */
+  .pto-box>.circle-box>.text {
+    height: 90px;
+    width: 90px;
+
+    border-radius: 50%;
+    margin: 20px;
+    background-color: rgb(7, 73, 255);
+    color: #fff;
+    position: relative;
+    z-index: 10;
+  }
+
+  .pto-box>.circle-box>.text>p {
+    text-align: center;
+    padding: 0 10px;
+  }
+
+  /* 扩散范围设置 */
+  .pto-box>.circle-box>.ks {
+    position: absolute;
+    width: calc(100% - 6px);
+    /* 减去边框的大小 */
+    height: calc(100% - 6px);
+    /* 减去边框的大小 */
+    border-radius: 50%;
+    opacity: 0;
+    border: 3px solid red;
+  }
+
+  .pto-box>.circle-box>.ks:first-child {
+    animation: circle-opacity 2s infinite;
+  }
+
+  .pto-box>.circle-box>.ks:nth-child(2) {
+    animation: circle-opacity 2s infinite;
+    animation-delay: .3s;
+  }
+
+  .pto-box>.circle-box>.ks:nth-child(3) {
+    animation: circle-opacity 2s infinite;
+    animation-delay: .6s;
+  }
+
+  @keyframes circle-opacity {
+    from {
+      opacity: 1;
+      transform: scale(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+
+  /* 图片 */
+  .pto-box>.arrow-box {
+    width: 90px;
+  }
+
+  .pto-box>.arrow-box>img {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* 内容区域 */
+  .content-box {
+    overflow: auto;
+  }
+
+  .content-box .bg-white {
+    background-color: #fff;
+    padding: 15px 25px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .content-box .bg-white>p {
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .content-box .bg-white>p>img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+
+  .content-box .bg-white>.dev-content {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .content-box .bg-white>.dev-content>div:first-child {
+    margin-right: 70px;
+  }
+
+  .content-box .bg-white>.dev-content>div>p {
+    margin-bottom: 15px;
+  }
+
+  .content-box .bg-white>.dev-content>div>span {
+    font-weight: bold;
+  }
+
+  /* 右边列表 */
+  .warn-box {
+    padding: 0 15px;
+  }
+
+  .warn-box>.warn-list {
+    padding: 5px 0;
+    display: flex;
+  }
+
+  .warn-box>.warn-list>p:first-child {
+    min-width: 130px;
+  }
+
+  .warn-box>.warn-list>p:first-child,
+  .warn-box>.warn-list>div {
+    display: flex;
+    align-items: center;
+  }
+
+  .warn-box>.warn-list>div>img {
+    width: 20px;
+    height: 20px;
+    margin: 0 10px;
+  }
+
+  /* eachart */
+  .echart-box {
+    margin-top: 10px;
+    background-color: #fff;
+  }
+
+  .echart-btn-box {
+    display: flex;
+    background-color: #fff;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+  }
+
+  .isPointer {
+    cursor: pointer;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: relative;
+    width: 1000px;
+    opacity: 0;
+    left: 0;
+    transition: left 1s, width 1s, opacity 1s;
+  }
+
+  .item-img {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+
+  }
+
+  .view-header-item-title {
+    text-align: center;
+  }
+
+  .right-item,
+  .left-item {
+    transition: width 1s;
+  }
+
+  .left-item {
+    cursor: pointer;
+    padding: 25px 0;
+  }
+
+  .left-item>div {
+    margin-top: 20px;
+  }
+
+  .right-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    vertical-align: middle;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    position: relative;
+  }
+
+  .right-item .circle-item {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #AEAEAE;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+  }
+
+  .circle-item .circle-item-text {
+    width: 100%;
+    text-align: center;
+  }
+
+  .right-item>.fanhui {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .view-centent-right-block1>div {
+    padding: 10px 0;
+  }
+
+  .view-centent-right-block1__item-img {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    margin: 0 auto;
+    padding-bottom: 10px;
+  }
+
+  .view-centent-right-block2 {
+    display: flex;
+    align-items: center;
+  }
+
+  .view-centent-right-block1__item-text,
+  .view-centent-right-block2__item-text {
+    text-align: center;
+  }
+
+  .view-centent-right-block2>div {
+    padding: 16px 0;
+  }
+
+  .view-centent-right-block2__item-img {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    margin: 0 auto;
+    padding-bottom: 10px;
+  }
+</style>
+
+<body>
+  <div class="layui-fluid">
+    <!-- 内容层 -->
+    <div style="margin-top:10px;" class="content-box layui-col-space10">
+      <div class="layui-col-sm9 layui-col-md9">
+        <div class="view-centent-left-block1 layui-row layui-col-space15" style="background-color: unset;">
+          <div class="layui-col-sm3 layui-col-md3">
+            <div class="bg-white">
+              <div class="item">
+                <div class="left-item">
+                  <img class="item-img" src="../img/main/u210.svg" alt="">
+                  <div class="view-header-item-title">标准数据建设</div>
+                </div>
+                <div class="right-item">
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go1">数据目录</div>
+                  </div>
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go2">元数据</div>
+                  </div>
+                  <i class="fanhui iconfont icon-fanhui"></i>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="layui-col-sm3 layui-col-md3">
+            <div class="bg-white">
+              <div class="item">
+                <div class="left-item">
+                  <img class="item-img" src="../img/main/u430.svg" alt="">
+                  <div class="view-header-item-title">数据采集方式</div>
+                </div>
+                <div class="right-item">
+                  <div class="circle-item" id="goToNav1">
+                    <div class="circle-item-text">文件上传</div>
+                  </div>
+                  <div class="circle-item" id="goToNav2">
+                    <div class="circle-item-text">非关系型数据库采集</div>
+                  </div>
+                  <div class="circle-item" id="goToNav3">
+                    <div class="circle-item-text">关系型数据库采集</div>
+                  </div>
+                  <div class="circle-item" id="goToNav4">
+                    <div class="circle-item-text">接口获取</div>
+                  </div>
+                  <i class="fanhui iconfont icon-fanhui"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-sm3 layui-col-md3">
+            <div class="bg-white">
+              <div class="item">
+                <div class="left-item">
+                  <img class="item-img" src="../img/main/u441.svg" alt="">
+                  <div class="view-header-item-title">数据处理</div>
+                </div>
+                <div class="right-item">
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go4">ETL工具</div>
+                  </div>
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go5">机器学习</div>
+                  </div>
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go6">地址等价</div>
+                  </div>
+                  <i class="fanhui iconfont icon-fanhui"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-sm3 layui-col-md3">
+            <div class="bg-white">
+              <div class="item">
+                <div class="left-item">
+                  <img class="item-img" src="../img/main/u450.svg" alt="">
+                  <div class="view-header-item-title">数据回溯</div>
+                </div>
+                <div class="right-item">
+                  <div class="circle-item">
+                    <div class="circle-item-text" id="go7">血缘分析</div>
+                  </div>
+                  <i class="fanhui iconfont icon-fanhui"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layui-col-sm4 layui-col-md4">
+          <div class="bg-white" style="margin:2px 10px 0 0;">
+            <p><img src="../layuiadmin/img/door.svg" alt="">门禁统计</p>
+            <div class="dev-content">
+              <div>
+                <p>设备厂商</p>
+                <span>20</span>
+              </div>
+              <div>
+                <p>设备数</p>
+                <span>20000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-sm4 layui-col-md4">
+          <div class="bg-white" style="margin:2px 5px 0;">
+            <p><img src="../layuiadmin/img/wait.svg" alt="">停车场统计</p>
+            <div class="dev-content">
+              <div>
+                <p>设备厂商</p>
+                <span>20</span>
+              </div>
+              <div>
+                <p>设备数</p>
+                <span>20000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-sm4 layui-col-md4">
+          <div class="bg-white" style="margin: 2px 0 0 10px;">
+            <p><img src="../layuiadmin/img/pto.svg" alt="">智能前端统计</p>
+            <div class="dev-content">
+              <div>
+                <p>设备厂商</p>
+                <span>20</span>
+              </div>
+              <div>
+                <p>设备数</p>
+                <span>20000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 统计结束 -->
+        <!-- 行政区汇聚 -->
+        <div class="layui-col-sm12 layui-col-md12">
+          <div id="xzq_echart" class="echart-box" style="height:366px;"></div>
+          <div class="echart-btn-box">
+            <button class="layui-btn layui-btn-xs" data-id="0">数据总量</button>
+            <button class="layui-btn layui-btn-xs layui-btn-normal" data-id="1">门禁数据</button>
+            <button class="layui-btn layui-btn-xs layui-btn-warm" data-id="2">停车场数据</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" data-id="3">智能前端数据</button>
+          </div>
+        </div>
+        <!-- 近一周数据采集 -->
+        <div class="layui-col-sm12 layui-col-md12">
+          <div id="week_echart" class="echart-box" style="height:406px;"></div>
+        </div>
+      </div>
+      <div class="layui-col-sm3 layui-col-md3">
+        <div class="view-centent-right-block1 layui-row" style="margin-bottom: 10px;">
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">采集服务管理</div>
+          </div>
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">数据存储管理</div>
+          </div>
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">数据资源管理</div>
+          </div>
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">数据监控管理</div>
+          </div>
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">采集监控管理</div>
+          </div>
+          <div class="layui-col-sm4 layui-col-md4">
+            <img class="view-centent-right-block1__item-img  isPointer" src="../img/main/u461.svg" alt="">
+            <div class="view-centent-right-block1__item-text">系统设置</div>
+          </div>
+        </div>
+        <div class="view-centent-right-block2 layui-row" style="margin-bottom: 10px;">
+          <div class="layui-col-sm6 layui-col-md6" lay-href="business\equipmentSaveFile\equipmentSaveFileIndex.html">
+            <img class="view-centent-right-block2__item-img isPointer" src="../img/main/u459.svg" alt="">
+            <div class="view-centent-right-block2__item-text">设备建档</div>
+          </div>
+          <a class="layui-col-sm6 layui-col-md6" target="_Blank"
+            href="business\dataVisualization\dataVisualizationIndex.html">
+            <img class="view-centent-right-block2__item-img isPointer" src="../img/main/u456.svg" alt="">
+            <div class="view-centent-right-block2__item-text">数据可视化</div>
+          </a>
+        </div>
+        <div class="layui-card">
+          <div class="layui-card-header aside-right">
+            平台告警
+          </div>
+          <div class="layui-card-body warn-box" style="height:779px;">
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u230.svg" alt=""></div>
+              <p>门禁采集任务1启动不成功，请及时处理。</p>
+            </div>
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u236.svg" alt=""></div>
+              <p>服务器启动不成功，请及时处理。</p>
+            </div>
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u237.svg" alt=""></div>
+              <p>采集接口1访问异常，请及时处理。</p>
+            </div>
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u230.svg" alt=""></div>
+              <p>门禁采集任务1启动不成功，请及时处理。</p>
+            </div>
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u230.svg" alt=""></div>
+              <p>门禁采集任务1启动不成功，请及时处理。</p>
+            </div>
+            <div class="warn-list">
+              <p>2020-1-11 14:06:44</p>
+              <div><img src="../layuiadmin/img/u230.svg" alt=""></div>
+              <p>服务器启动不成功，请及时处理。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="../layuiadmin/lib/echarts.js"></script>
+<script src="../layuiadmin/layui/layui.js"></script>
+<script>
+  layui.config({
+    base: '../layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index', //主入口模块
+    compoment: '../js/compoment', //接口方法模块
+  }).use(['index', 'table', 'common', 'compoment', 'form', 'laydate'], function() {
+    var $ = layui.$,
+      form = layui.form,
+      laydate = layui.laydate;
+    table = layui.table,
+      compoment = layui.compoment;
+
+    const itemWidth = $('.bg-white').eq(0).width()
+    const itemArr = $('.item')
+    $('.left-item, .right-item').each((index, elem) => {
+      $(elem).css({ 'width': itemWidth + 'px' })
+    })
+    $('.item').each((index, elem) => {
+      $(elem).css({ 'width': itemWidth * 2 + 100 + 'px', 'opacity': '1' })
+      $(elem).click(function() {
+        $(this).css('left', -itemWidth - 100 + 'px')
+      })
+    })
+    $('.fanhui').each((index, elem) => {
+      $(elem).on('click', function(e) {
+        e.stopPropagation()
+        itemArr.eq(index).css('left', '0')
+      })
+    })
+
+    // 	近一周数据采集情况
+    var weekData = {
+      title: '近一周数据采集情况',
+      color: ['#FF9090', '#A693EB', '#5AB0EE'],
+      data: [
+        {
+          name: '门禁',
+          type: 'line',
+          data: [50000, 60200, 80201, 93040, 150000, 180000, 250000]
+        },
+        {
+          name: '停车场',
+          type: 'line',
+          data: [61000, 63000, 70101, 103400, 145000, 151000, 165000]
+        },
+        {
+          name: '智能前端',
+          type: 'line',
+          data: [48000, 50000, 53000, 70500, 86000, 132000, 160000]
+        }
+      ],
+      toolTip: ['门禁', '停车场', '智能前端'],
+      xData: ['01-01', '01-02', '01-03', '01-04', '01-05', '01-06', '01-07']
+    };
+    function loadLine(data, callback) {
+      var option = {
+        grid: { left: 10, right: 30, top: 70, bottom: '3%', containLabel: true, borderWidth: '0' },
+        title: [{
+          text: data.title,
+          left: 10,
+          top: 10,
+          textStyle: {
+            color: '#000',
+            fontWeight: 'normal',
+            fontSize: 14
+          }
+        }],
+        color: data.color,
+        tooltip: { trigger: 'axis' },
+        legend: {
+          x: 'right',
+          y: 40,
+          data: data.toolTip
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          axisLine: {
+            lineStyle: { color: "#8B8B8B" }
+          },
+          data: data.xData
+        },
+        yAxis: {
+          type: 'value',
+          axisLine: {
+            lineStyle: { color: "#8B8B8B" }
+          }
+        },
+        series: data.data
+      };
+      callback(option);
+    }
+    let myChartWEEK = echarts.init(document.getElementById("week_echart"));
+    loadLine(weekData, function(option) {
+      //初始显示图表。
+      myChartWEEK.setOption(option);
+    });
+
+    //  各行政区数据汇聚情况
+    let xzqArr = [
+      [
+        { value: 105228, name: '天河区' },
+        { value: 96500, name: '海珠区' },
+        { value: 91600, name: '南沙区' },
+        { value: 89010, name: '白云区' },
+        { value: 84050, name: '番禺区' },
+        { value: 75600, name: '花都区' },
+        { value: 75050, name: '越秀区' },
+        { value: 69090, name: '荔湾区' },
+        { value: 66780, name: '从化区' },
+        { value: 65742, name: '黄浦区' },
+        { value: 63256, name: '增城区' }
+      ],
+      // 门禁数据
+      [
+        { value: 30256, name: '天河区' },
+        { value: 30100, name: '海珠区' },
+        { value: 29580, name: '南沙区' },
+        { value: 27410, name: '白云区' },
+        { value: 26350, name: '番禺区' },
+        { value: 24220, name: '花都区' },
+        { value: 22590, name: '越秀区' },
+        { value: 21200, name: '荔湾区' },
+        { value: 18200, name: '从化区' },
+        { value: 18165, name: '黄浦区' },
+        { value: 16500, name: '增城区' }
+      ],
+      // 停车场数据
+      [
+        { value: 31265, name: '天河区' },
+        { value: 29865, name: '海珠区' },
+        { value: 27560, name: '南沙区' },
+        { value: 26580, name: '白云区' },
+        { value: 25650, name: '番禺区' },
+        { value: 23860, name: '花都区' },
+        { value: 22450, name: '越秀区' },
+        { value: 20580, name: '荔湾区' },
+        { value: 18690, name: '从化区' },
+        { value: 17230, name: '黄浦区' },
+        { value: 16420, name: '增城区' }
+      ],
+      // 智能前端数据
+      [
+        { value: 43716, name: '天河区' },
+        { value: 36535, name: '海珠区' },
+        { value: 35020, name: '南沙区' },
+        { value: 34460, name: '白云区' },
+        { value: 32050, name: '番禺区' },
+        { value: 30347, name: '花都区' },
+        { value: 30010, name: '越秀区' },
+        { value: 29890, name: '荔湾区' },
+        { value: 27520, name: '从化区' },
+        { value: 27310, name: '黄浦区' },
+        { value: 20336, name: '增城区' }
+      ]
+    ];
+    var xzqData = {
+      title: '各行政区数据汇聚情况',
+      color: ['#00B0F0'],
+      rotate: 40,
+      barWidth: 30,
+      data: [
+        { value: 105228, name: '天河区' },
+        { value: 96500, name: '海珠区' },
+        { value: 91600, name: '南沙区' },
+        { value: 89010, name: '白云区' },
+        { value: 84050, name: '番禺区' },
+        { value: 75600, name: '花都区' },
+        { value: 75050, name: '越秀区' },
+        { value: 69090, name: '荔湾区' },
+        { value: 66780, name: '从化区' },
+        { value: 65742, name: '黄浦区' },
+        { value: 63256, name: '增城区' }
+      ],
+      toolTip: ['天河区', '海珠区', '南沙区', '白云区', '番禺区', '花都区', '越秀区', '荔湾区', '从化区', '黄浦区', '增城区']
+    }
+    // 柱echart	
+    function loadZ(data, callback) {
+      var option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+            type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        grid: { left: 10, right: 10, bottom: '3%', top: 60, containLabel: true, borderWidth: '0' },
+        title: [{
+          text: data.title,
+          left: 10,
+          top: 10,
+          textStyle: {
+            color: '#000',
+            fontWeight: 'normal',
+            fontSize: 14
+          }
+        }],
+        xAxis: {
+          type: 'category',
+          axisLine: {
+            lineStyle: { color: "#8B8B8B" }
+          },
+          axisTick: { "show": false },
+          data: data.toolTip,
+          axisLabel: {
+            rotate: data.rotate
+          }
+        },
+        yAxis: {
+          type: 'value',
+          axisLine: { show: false }
+        },
+        series: [{
+          type: 'bar',
+          data: data.data,
+          barWidth: data.barWidth,
+          label: {
+            normal: {
+              show: false,
+              position: 'top',
+              color: '#8B8B8B'
+            }
+          },
+          itemStyle: {
+            normal: {
+              //每根柱子颜色设置
+              color: function(params) {
+                return data.color[params.dataIndex];
+              }
+            }
+          }
+        }]
+      };
+      callback(option);
+    }
+    let myChartXZQ = "";
+    // 处理重复加载创建的echart对象报错
+    function initMychart(data) {
+      for (var i = 0; i < data.length; i++) {
+        if (!common.isEmpty(data[i])) {
+          data[i].dispose();
+        }
+      }
+    }
+    //切换
+    $(".echart-btn-box>button").hover(function() {
+      let id = $(this).data("id");
+      xzqData.data = xzqArr[id];
+      if (!compoment.isEmpty(myChartXZQ)) {
+        myChartXZQ.dispose();
+      }
+
+      // xzqData
+      loadZ(xzqData, function(option) {
+        myChartXZQ = echarts.init(document.getElementById("xzq_echart"));
+        //初始显示图表。
+        myChartXZQ.setOption(option);
+      });
+    }, function() {
+      xzqData.data = xzqArr[0];
+      // xzqData
+      loadZ(xzqData, function(option) {
+        myChartXZQ = echarts.init(document.getElementById("xzq_echart"));
+        //初始显示图表。
+        myChartXZQ.setOption(option);
+      });
+    });
+
+
+
+    $('body').on('click', '#goToNav1', function() {
+      top.layui.index.openTabsPage('business/fileManagement/fileManagementIndex.html', '文件采集')
+    })
+
+
+    $('body').on('click', '#goToNav2', function() {
+      top.layui.index.openTabsPage('business/nonRelationalDatabaseMGT/nonRelationalDatabaseMGTIndex.html', '非关系型数据库采集')
+    })
+
+    $('body').on('click', '#goToNav3', function() {
+      top.layui.index.openTabsPage('http://127.0.0.1:9001/spoon/spoon', '关系型数据库获取')
+    })
+
+    $('body').on('click', '#goToNav4', function() {
+      top.layui.index.openTabsPage('business/poswoman/poswoman.html', '接口获取')
+    })
+
+    $('body').on('click', '#goToNav5', function() {
+      top.layui.index.openTabsPage('http://127.0.0.1:8888/webpro/swagger-ui.html', 'Http开放接口')
+    })
+
+
+    $('body').on('click', '#go1', function() {
+      top.layui.index.openTabsPage('business/dataResourceManagement/dataDirectory.html', '数据目录')
+    })
+    $('body').on('click', '#go2', function() {
+      top.layui.index.openTabsPage('business/panghu/meta-data.html', '元数据')
+    });
+
+    $('body').on('click', '#go4', function() {
+      top.layui.index.openTabsPage('http://127.0.0.1:9001/spoon/spoon', 'ETL')
+    });
+
+
+    $('body').on('click', '#go5', function() {
+        top.layui.index.openTabsPage('business/panghu/machine-learning.html','机器学习')
+      });
+	
+      $('body').on('click', '#go6', function() {
+        top.layui.index.openTabsPage('business/demo/demoAddressEqualsList.html','二次处理')
+      });
+      
+      $('body').on('click', '#go7', function() {
+          top.layui.index.openTabsPage('business/panghu/meta-data-analysis.html','血缘分析')
+        });
+    loadZ(xzqData, function(option) {
+      myChartXZQ = echarts.init(document.getElementById("xzq_echart"));
+      //初始显示图表。
+      myChartXZQ.setOption(option);
+    });
+
+    // +----------------------------------------------------
+    // |        echart自适应重绘
+    // +----------------------------------------------------
+    window.addEventListener("resize", function() {
+      myChartWEEK.resize();
+      myChartXZQ.resize();
+    });
+
+  });
+</script>
+
+</html>
