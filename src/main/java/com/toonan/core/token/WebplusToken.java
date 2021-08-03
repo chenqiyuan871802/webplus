@@ -1,0 +1,133 @@
+package com.toonan.core.token;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.common.utils.ip.AddressUtils;
+import com.ruoyi.common.utils.ip.IpUtils;
+import com.ruoyi.framework.security.LoginUser;
+import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.util.WebplusUtil;
+import com.toonan.core.vo.UserToken;
+
+import eu.bitwalker.useragentutils.UserAgent;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
+
+
+/**
+ * 
+ * @ClassName:  WebplusToken   
+ * @Description:token管理工具类
+ * @author: 陈骑元（chenqiyuan@toonan.com)
+ * @date:   2021年8月3日 下午10:31:55     
+ * @Copyright: 2021 www.toonan.com Inc. All rights reserved. 
+ * 注意：本内容仅限于广州市图南软件有限公司内部传阅，禁止外泄以及用于其他的商业目
+ */
+public class WebplusToken {
+	
+	/**
+	 *  令牌自定义标识
+	 */
+	public static String HEADER="Authorization";
+	/**
+	 *  令牌自定义标识
+	 */
+	public static String SECRET="toonanewebplus";
+	/**
+	 * 令牌有效期（默认30分钟）
+	 */
+	public static int EXPIRE_TIME=30;
+    
+	
+    /**
+     * 
+     * 简要说明：设置用户代理信息
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月3日 下午11:29:11 
+     * @param 说明
+     * @return 说明
+     */
+    public static void setUserAgent(UserToken userToken)
+    {
+        UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtils.getRequest().getHeader("User-Agent"));
+        String ip = WebplusUtil.getIpAddr(ServletUtils.getRequest());
+        userToken.setIpaddr(ip);
+        userToken.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
+        userToken.setBrowser(userAgent.getBrowser().getName());
+        userToken.setOs(userAgent.getOperatingSystem().getName());
+    }
+	
+	 /**
+     * 从数据声明生成令牌
+     *
+     * @param claims 数据声明
+     * @return 令牌
+     */
+    private static  String createToken(Map<String, Object> claims)
+    {
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .signWith(SignatureAlgorithm.HS512, SECRET).compact();
+        return token;
+    }
+	/**
+	 * 
+	 * 简要说明：从令牌中获取数据声明
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年8月3日 下午10:53:49 
+	 * @param 说明  token 令牌
+	 * @return 说明
+	 */
+    private static Claims parseToken(String token)
+    {
+        return Jwts.parser()
+                .setSigningKey(SECRET)
+                .parseClaimsJws(token)
+                .getBody();
+    }
+    /**
+     * 
+     * 简要说明：从令牌中获取用户名
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月3日 下午11:00:37 
+     * @param 说明
+     * @return 说明
+     */
+    public static String getUsernameFromToken(String token)
+    {
+        Claims claims = parseToken(token);
+        return claims.getSubject();
+    }
+	/**
+	 * 
+	 * 简要说明：获得请求令牌
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年8月3日 下午10:48:51 
+	 * @param 说明
+	 * @return 说明
+	 */
+	public static String getToken(HttpServletRequest request) {
+		String token = request.getHeader(HEADER);
+		if (WebplusUtil.isNotEmpty(token) && token.startsWith(WebplusCons.TOKEN_PREFIX)) {
+			token = token.replace(WebplusCons.TOKEN_PREFIX, "");
+		}
+		return token;
+	}
+	/**
+	 * 
+	 * 简要说明：获取token缓存健
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年8月3日 下午10:52:38 
+	 * @param 说明
+	 * @return 说明
+	 */
+	private static  String getTokenKey(String uuid) {
+		
+		return WebplusCons.CACHE_PREFIX.TOKEN + uuid;
+	}
+}

@@ -17,7 +17,8 @@
 		<velocity.version>1.7</velocity.version>
 		<pinyin4j.version>2.5.1</pinyin4j.version>
 		<mybatis-plus.version>2.3</mybatis-plus.version>
-		<dubbo-springboot.version>0.2.0</dubbo-springboot.version>
+		<jwt.version>0.9.0</jwt.version>
+		<bitwalker.version>1.19</bitwalker.version>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -267,7 +268,18 @@
 			<version>4.5.10</version>
 			<scope>compile</scope>
 		</dependency>
+	<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>${jwt.version}</version>
+		</dependency>
 		
+		<!-- 解析客户端操作系统、浏览器等 -->
+		<dependency>
+			<groupId>eu.bitwalker</groupId>
+			<artifactId>UserAgentUtils</artifactId>
+			<version>${bitwalker.version}</version>
+		</dependency>	
 	<!-- https://mvnrepository.com/artifact/io.minio/minio -->
 	<dependency>
 		<groupId>io.minio</groupId>
