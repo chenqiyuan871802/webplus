@@ -1,13 +1,13 @@
 package com.toonan.core.token;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.ruoyi.common.utils.ServletUtils;
-import com.ruoyi.common.utils.ip.AddressUtils;
-import com.ruoyi.common.utils.ip.IpUtils;
-import com.ruoyi.framework.security.LoginUser;
+
+import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.util.WebplusServlet;
 import com.toonan.core.util.WebplusUtil;
@@ -43,8 +43,113 @@ public class WebplusToken {
 	 * 令牌有效期（默认30分钟）
 	 */
 	public static int EXPIRE_TIME=30;
-    
 	
+    private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
+    /**
+     * 
+     * 简要说明：获取用户token信息
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午10:02:12 
+     * @param 说明
+     * @return 说明
+     */
+    public UserToken getUserToken(HttpServletRequest request)
+    {
+        // 获取请求携带的令牌
+        String token = getToken(request);
+        if (WebplusUtil.isNotEmpty(token))
+        {
+            Claims claims = parseToken(token);
+            // 解析对应的权限以及用户信息
+            String uuid = (String) claims.get(WebplusCons.LOGIN_USER_KEY);
+            String userKey = getTokenKey(uuid);
+            UserToken  user = WebplusCache.getUserToken(userKey);
+            return user;
+        }
+        return null;
+    }
+    /**
+     * 
+     * 简要说明：设置用户身份信息
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午10:06:54 
+     * @param 说明
+     * @return 说明
+     */
+    public void setUserToken(UserToken userToken)
+    {
+        if (WebplusUtil.isNotEmpty(userToken) && WebplusUtil.isNotEmpty(userToken.getToken()))
+        {
+            String userKey = getTokenKey(userToken.getToken());
+            WebplusCache.setUserToken(userKey, userToken);
+        }
+    }
+    /**
+     * 
+     * 简要说明：删除用户身份
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午10:11:00 
+     * @param 说明
+     * @return 说明
+     */
+    public void removeUserToken(String token)
+    {
+        if (WebplusUtil.isNotEmpty(token))
+        {
+            String userKey = getTokenKey(token);
+            WebplusCache.delString(userKey);
+        }
+    }
+    
+    
+    /**
+     * 创建令牌
+     * 
+     * @param userToken 用户信息
+     * @return 令牌
+     */
+    public String createToken(UserToken userToken)
+    {
+        String token = WebplusUtil.uuid();
+        userToken.setToken(token);
+        setUserAgent(userToken);
+        refreshToken(userToken);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(WebplusCons.LOGIN_USER_KEY, token);
+        return createToken(claims);
+    }
+    
+    /**
+     * 验证令牌有效期，相差不足20分钟，自动刷新缓存
+     * 
+     * @param token 令牌
+     * @return 令牌
+     */
+    public void verifyToken(UserToken userToken)
+    {
+        long expireTime = userToken.getExpireTime();
+        long currentTime = System.currentTimeMillis();
+        if (expireTime - currentTime <= MILLIS_MINUTE_TEN)
+        {
+            String token = loginUser.getToken();
+            loginUser.setToken(token);
+            refreshToken(loginUser);
+        }
+    }
+
+    /**
+     * 刷新令牌有效期
+     * 
+     * @param loginUser 登录信息
+     */
+    public void refreshToken(UserToken userToken)
+    {
+        loginUser.setLoginTime(System.currentTimeMillis());
+        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
+        // 根据uuid将loginUser缓存
+        String userKey = getTokenKey(loginUser.getToken());
+        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+    }
     /**
      * 
      * 简要说明：设置用户代理信息
@@ -58,7 +163,7 @@ public class WebplusToken {
         UserAgent userAgent = UserAgent.parseUserAgentString(WebplusServlet.getRequest().getHeader("User-Agent"));
         String ip = WebplusUtil.getIpAddr(WebplusServlet.getRequest());
         userToken.setIpaddr(ip);
-        userToken.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
+        userToken.setLoginLocation(WebplusUtil.getRealAddressByIP(ip));
         userToken.setBrowser(userAgent.getBrowser().getName());
         userToken.setOs(userAgent.getOperatingSystem().getName());
     }

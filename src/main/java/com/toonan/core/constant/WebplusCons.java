@@ -9,7 +9,10 @@ package com.toonan.core.constant;
  */
 public interface WebplusCons {
 	
-	
+    /**
+     * 令牌前缀
+     */
+    public static final String LOGIN_USER_KEY = "login_user_key";
     /**
      * 令牌前缀
      */

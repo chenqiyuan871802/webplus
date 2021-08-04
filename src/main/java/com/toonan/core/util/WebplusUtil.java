@@ -1,17 +1,9 @@
 package com.toonan.core.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,7 +18,6 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +33,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpUtils;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
@@ -53,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
@@ -70,6 +63,7 @@ import com.toonan.core.matatype.impl.HashDto;
 @SuppressWarnings("all")
 public class WebplusUtil {
     
+	public static final String IP_URL = "http://ip.taobao.com/service/getIpInfo.php";
 	   /** 空字符串 */
     private static final String NULLSTR = "";
 
@@ -2481,6 +2475,209 @@ public class WebplusUtil {
     public static Integer toInt(Object value)
     {
         return toInt(value, null);
+    }
+    /**
+     * 
+     * 简要说明：
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午9:58:23 
+     * @param 说明
+     * @return 说明
+     */
+    private static boolean internalIp(byte[] addr)
+    {
+        if (isEmpty(addr) || addr.length < 2)
+        {
+            return true;
+        }
+        final byte b0 = addr[0];
+        final byte b1 = addr[1];
+        // 10.x.x.x/8
+        final byte SECTION_1 = 0x0A;
+        // 172.16.x.x/12
+        final byte SECTION_2 = (byte) 0xAC;
+        final byte SECTION_3 = (byte) 0x10;
+        final byte SECTION_4 = (byte) 0x1F;
+        // 192.168.x.x/16
+        final byte SECTION_5 = (byte) 0xC0;
+        final byte SECTION_6 = (byte) 0xA8;
+        switch (b0)
+        {
+            case SECTION_1:
+                return true;
+            case SECTION_2:
+                if (b1 >= SECTION_3 && b1 <= SECTION_4)
+                {
+                    return true;
+                }
+            case SECTION_5:
+                switch (b1)
+                {
+                    case SECTION_6:
+                        return true;
+                }
+            default:
+                return false;
+        }
+    }
+    /**
+     * 
+     * 简要说明：判断是否内网ip
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午9:57:23 
+     * @param 说明
+     * @return 说明
+     */
+    public static boolean internalIp(String ip)
+    {
+        byte[] addr = textToNumericFormatV4(ip);
+        return internalIp(addr) || "127.0.0.1".equals(ip);
+    }
+    
+    /**
+     * 将IPv4地址转换成字节
+     * 
+     * @param text IPv4地址
+     * @return byte 字节
+     */
+    public static byte[] textToNumericFormatV4(String text)
+    {
+        if (text.length() == 0)
+        {
+            return null;
+        }
+
+        byte[] bytes = new byte[4];
+        String[] elements = text.split("\\.", -1);
+        try
+        {
+            long l;
+            int i;
+            switch (elements.length)
+            {
+                case 1:
+                    l = Long.parseLong(elements[0]);
+                    if ((l < 0L) || (l > 4294967295L))
+                        return null;
+                    bytes[0] = (byte) (int) (l >> 24 & 0xFF);
+                    bytes[1] = (byte) (int) ((l & 0xFFFFFF) >> 16 & 0xFF);
+                    bytes[2] = (byte) (int) ((l & 0xFFFF) >> 8 & 0xFF);
+                    bytes[3] = (byte) (int) (l & 0xFF);
+                    break;
+                case 2:
+                    l = Integer.parseInt(elements[0]);
+                    if ((l < 0L) || (l > 255L))
+                        return null;
+                    bytes[0] = (byte) (int) (l & 0xFF);
+                    l = Integer.parseInt(elements[1]);
+                    if ((l < 0L) || (l > 16777215L))
+                        return null;
+                    bytes[1] = (byte) (int) (l >> 16 & 0xFF);
+                    bytes[2] = (byte) (int) ((l & 0xFFFF) >> 8 & 0xFF);
+                    bytes[3] = (byte) (int) (l & 0xFF);
+                    break;
+                case 3:
+                    for (i = 0; i < 2; ++i)
+                    {
+                        l = Integer.parseInt(elements[i]);
+                        if ((l < 0L) || (l > 255L))
+                            return null;
+                        bytes[i] = (byte) (int) (l & 0xFF);
+                    }
+                    l = Integer.parseInt(elements[2]);
+                    if ((l < 0L) || (l > 65535L))
+                        return null;
+                    bytes[2] = (byte) (int) (l >> 8 & 0xFF);
+                    bytes[3] = (byte) (int) (l & 0xFF);
+                    break;
+                case 4:
+                    for (i = 0; i < 4; ++i)
+                    {
+                        l = Integer.parseInt(elements[i]);
+                        if ((l < 0L) || (l > 255L))
+                            return null;
+                        bytes[i] = (byte) (int) (l & 0xFF);
+                    }
+                    break;
+                default:
+                    return null;
+            }
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+        return bytes;
+    }
+    
+    /**
+     * 
+     * 简要说明：获取ip地址
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午10:01:02 
+     * @param 说明
+     * @return 说明
+     */
+    public static String getIpAddr(HttpServletRequest request)
+    {
+        if (request == null)
+        {
+            return "unknown";
+        }
+        String ip = request.getHeader("x-forwarded-for");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getHeader("X-Forwarded-For");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getHeader("X-Real-IP");
+        }
+
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getRemoteAddr();
+        }
+
+        return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : ip;
+    }
+
+    /**
+     * 
+     * 简要说明：
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 下午9:52:46 
+     * @param 说明
+     * @return 说明
+     */
+    public static String getRealAddressByIP(String ip)
+    {
+        String address = "XX XX";
+        // 内网不查询
+        if (internalIp(ip))
+        {
+            return "内网IP";
+        }
+        String rspStr = WebplusHttp.doPost(IP_URL+"ip= + ip", Dtos.newDto());
+        if (StringUtils.isEmpty(rspStr))
+        {
+            log.error("获取地理位置异常 {"+ip+"}");
+            return address;
+        }
+        JSONObject obj = JSONObject.parseObject(rspStr);
+        JSONObject data = obj.getObject("data", JSONObject.class);
+        String region = data.getString("region");
+        String city = data.getString("city");
+        address = region + " " + city;
+        return address;
     }
 	/**
 	 * 测试

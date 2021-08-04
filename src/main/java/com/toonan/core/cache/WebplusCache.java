@@ -724,7 +724,9 @@ public class WebplusCache {
 		String tokenJson = WebplusJson.toJson(userToken);
 		return createToken(token, tokenJson);
 	}
-
+    
+	
+	
 	/**
 	 *
 	 * 简要说明：根据token 获取token 存储值 编写者：陈骑元 创建时间：2018年12月22日 下午1:58:54
@@ -737,6 +739,19 @@ public class WebplusCache {
 		String jsonStr = webplusJedis.getString(tokenKey);
 		logger.info("当前token：" + token + ",返回值：" + jsonStr);
 		return jsonStr;
+	}
+	/**
+	 * 
+	 * 简要说明：
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年8月4日 下午10:08:34 
+	 * @param 说明
+	 * @return 说明
+	 */
+	public static void setUserToken(String tokenKey,UserToken userToken) {
+		String tokenJson = WebplusJson.toJson(userToken);
+		createToken(tokenKey, tokenJson);
+		
 	}
 	 /**
      *
