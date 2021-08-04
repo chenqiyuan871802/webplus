@@ -69,7 +69,13 @@ import com.toonan.core.matatype.impl.HashDto;
  */
 @SuppressWarnings("all")
 public class WebplusUtil {
+    
+	   /** 空字符串 */
+    private static final String NULLSTR = "";
 
+    /** 下划线 */
+    private static final char SEPARATOR = '_';
+    
 	private static Log log = LogFactory.getLog(WebplusUtil.class);
 
 	/**
@@ -2325,6 +2331,156 @@ public class WebplusUtil {
 			e.printStackTrace();
 		}
         return Dtos.newDto();
+    }
+    
+    /**
+     * 
+     * 简要说明：下划线转驼峰式
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 上午8:53:57 
+     * @param 说明
+     * @return 说明
+     */
+    public static String toUnderScoreCase(String str)
+    {
+		if (isEmpty(str)) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		// 前置字符是否大写
+		boolean preCharIsUpperCase = true;
+		// 当前字符是否大写
+		boolean curreCharIsUpperCase = true;
+		// 下一字符是否大写
+		boolean nexteCharIsUpperCase = true;
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (i > 0) {
+				preCharIsUpperCase = Character.isUpperCase(str.charAt(i - 1));
+			} else {
+				preCharIsUpperCase = false;
+			}
+
+			curreCharIsUpperCase = Character.isUpperCase(c);
+
+			if (i < (str.length() - 1)) {
+				nexteCharIsUpperCase = Character.isUpperCase(str.charAt(i + 1));
+			}
+
+			if (preCharIsUpperCase && curreCharIsUpperCase && !nexteCharIsUpperCase) {
+				sb.append(SEPARATOR);
+			} else if ((i != 0 && !preCharIsUpperCase) && curreCharIsUpperCase) {
+				sb.append(SEPARATOR);
+			}
+			sb.append(Character.toLowerCase(c));
+		}
+		return sb.toString();
+    }
+
+    /**
+     * 
+     * 简要说明：是否包含字符串
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月4日 上午9:00:39 
+     * @param 说明
+     * @return 说明
+     */
+    public static boolean inStringIgnoreCase(String str, String... strs)
+    {
+		if (str != null && strs != null) {
+			for (String s : strs) {
+				if (str.equalsIgnoreCase(trimAll(s))) {
+					return true;
+				}
+			}
+		}
+		return false;
+    }
+    
+    /**
+     * 转换为字符串<br>
+     * 如果给定的值为null，或者转换失败，返回默认值<br>
+     * 转换失败不会报错
+     * 
+     * @param value 被转换的值
+     * @param defaultValue 转换错误时的默认值
+     * @return 结果
+     */
+    public static String toStr(Object value, String defaultValue)
+    {
+        if (isEmpty(value))
+        {
+            return defaultValue;
+        }
+        if (value instanceof String)
+        {
+            return (String) value;
+        }
+        return value.toString();
+    }
+
+    /**
+     * 转换为字符串<br>
+     * 如果给定的值为<code>null</code>，或者转换失败，返回默认值<code>null</code><br>
+     * 转换失败不会报错
+     * 
+     * @param value 被转换的值
+     * @return 结果
+     */
+    public static String toStr(Object value)
+    {
+        return toStr(value, "");
+    }
+    
+    /**
+     * 转换为int<br>
+     * 如果给定的值为空，或者转换失败，返回默认值<br>
+     * 转换失败不会报错
+     * 
+     * @param value 被转换的值
+     * @param defaultValue 转换错误时的默认值
+     * @return 结果
+     */
+    public static Integer toInt(Object value, Integer defaultValue)
+    {
+        if (value == null)
+        {
+            return defaultValue;
+        }
+        if (value instanceof Integer)
+        {
+            return (Integer) value;
+        }
+        if (value instanceof Number)
+        {
+            return ((Number) value).intValue();
+        }
+        final String valueStr = toStr(value, null);
+        if (StringUtils.isEmpty(valueStr))
+        {
+            return defaultValue;
+        }
+        try
+        {
+            return Integer.parseInt(valueStr.trim());
+        }
+        catch (Exception e)
+        {
+            return defaultValue;
+        }
+    }
+    
+    /**
+     * 转换为int<br>
+     * 如果给定的值为<code>null</code>，或者转换失败，返回默认值<code>null</code><br>
+     * 转换失败不会报错
+     * 
+     * @param value 被转换的值
+     * @return 结果
+     */
+    public static Integer toInt(Object value)
+    {
+        return toInt(value, null);
     }
 	/**
 	 * 测试

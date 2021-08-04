@@ -9,6 +9,7 @@ import com.ruoyi.common.utils.ip.AddressUtils;
 import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.framework.security.LoginUser;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.util.WebplusServlet;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.UserToken;
 
@@ -54,8 +55,8 @@ public class WebplusToken {
      */
     public static void setUserAgent(UserToken userToken)
     {
-        UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtils.getRequest().getHeader("User-Agent"));
-        String ip = WebplusUtil.getIpAddr(ServletUtils.getRequest());
+        UserAgent userAgent = UserAgent.parseUserAgentString(WebplusServlet.getRequest().getHeader("User-Agent"));
+        String ip = WebplusUtil.getIpAddr(WebplusServlet.getRequest());
         userToken.setIpaddr(ip);
         userToken.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
         userToken.setBrowser(userAgent.getBrowser().getName());
