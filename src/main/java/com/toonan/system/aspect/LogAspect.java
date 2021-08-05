@@ -17,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.toonan.core.annotation.LogTag;
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.matatype.Dto;
+import com.toonan.core.token.WebplusToken;
 import com.toonan.core.util.WebplusJson;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.UserToken;
@@ -92,9 +93,9 @@ public class LogAspect {
 	    	}
 	    	sysLog.setParams(params);
 	    	sysLog.setMethod(request.getRequestURI());
-	    	String token=pDto.getString(SystemCons.TOKEN_PARAM	);
-	    	if(WebplusUtil.isNotEmpty(token)){
-	    		UserToken userToken =WebplusCache.getUserToken(token);
+	    	UserToken userToken =WebplusToken.getUserToken(request);
+	    	if(WebplusUtil.isNotEmpty(userToken)){
+	    		
 	    		if(WebplusUtil.isNotEmpty(userToken)){
 	    			sysLog.setUserId(userToken.getUserId());
 	    			sysLog.setUserName(userToken.getUsername());

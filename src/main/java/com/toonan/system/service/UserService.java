@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
+import com.toonan.core.token.WebplusToken;
 import com.toonan.core.util.WebplusSqlHelp;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.Query;
@@ -151,7 +152,7 @@ public class UserService extends ServiceImpl<UserMapper, User>  {
 			userToken.setUsername(user.getUsername());
 			userToken.setCreateTime(now);
 			userToken.setRefreshTime(now);
-			String token=WebplusCache.createToken(userToken);
+			String token=WebplusToken.createToken(userToken);
 			r.put("token", token);
 			r.put("user", user);
 			return r;
@@ -184,7 +185,7 @@ public class UserService extends ServiceImpl<UserMapper, User>  {
 				userToken.setUsername(user.getUsername());
 				userToken.setCreateTime(now);
 				userToken.setRefreshTime(now);
-				String token=WebplusCache.createToken(userToken);
+				String token=WebplusToken.createToken(userToken);
 				r.put("token", token);
 				r.put("user", user);
 				return r;

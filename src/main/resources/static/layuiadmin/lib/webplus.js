@@ -503,11 +503,14 @@ layui.define(['upload'], function (exports) {
             		page=false;
             	}
             }
-            params.token = webplus.getToken();
+            var token='Bearer '+webplus.getToken();
             table.render({
                 elem: tableId, //表id
                 url: url,
                 where: params,
+                headers:{
+                	'Authorization':token
+                },
                 method: 'post', //请求方式
                 height: height, //控制表格高度
                 toolbar: toolbar, //引入表头按钮
@@ -1293,9 +1296,12 @@ layui.define(['upload'], function (exports) {
                 url = cxt + url;
             }
 
-            params.token = webplus.getToken();
+            var token='Bearer '+webplus.getToken();
             $.ajax({
                 type: type,
+                headers:{
+                	'Authorization':token
+                },
                 url: url,
                 data: params,
                 timeout: 30000,

@@ -1,14 +1,14 @@
 package com.toonan.core.token;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
-
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.util.WebplusJson;
 import com.toonan.core.util.WebplusServlet;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.UserToken;
@@ -43,8 +43,10 @@ public class WebplusToken {
 	 * 令牌有效期（默认30分钟）
 	 */
 	public static int EXPIRE_TIME=30;
-	
-    private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
+	/**
+	 * 低于二十分钟自动刷新
+	 */
+    private static final int MINUTE_TEN = 15;
     /**
      * 
      * 简要说明：获取用户token信息
@@ -53,20 +55,37 @@ public class WebplusToken {
      * @param 说明
      * @return 说明
      */
-    public UserToken getUserToken(HttpServletRequest request)
+    public static UserToken getUserToken(HttpServletRequest request)
     {
         // 获取请求携带的令牌
         String token = getToken(request);
         if (WebplusUtil.isNotEmpty(token))
         {
-            Claims claims = parseToken(token);
-            // 解析对应的权限以及用户信息
-            String uuid = (String) claims.get(WebplusCons.LOGIN_USER_KEY);
-            String userKey = getTokenKey(uuid);
-            UserToken  user = WebplusCache.getUserToken(userKey);
+            UserToken  user =getUserToken(token); 
             return user;
         }
         return null;
+    }
+    /**
+     * 
+     * 简要说明：获取缓存token信息
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月5日 下午3:42:52 
+     * @param 说明
+     * @return 说明
+     */
+    public static UserToken getUserToken(String token) {
+    	Claims claims = parseToken(token);
+        // 解析对应的权限以及用户信息
+        String uuid = (String) claims.get(WebplusCons.LOGIN_USER_KEY);
+        String userKey = getTokenKey(uuid);
+    	UserToken userToken = null;
+    	String userJson=WebplusCache.getString(userKey);
+    	if (WebplusUtil.isNotEmpty(userJson)) {
+			userToken = WebplusJson.fromJson(userJson, UserToken.class);
+
+		}
+    	return userToken;
     }
     /**
      * 
@@ -76,12 +95,12 @@ public class WebplusToken {
      * @param 说明
      * @return 说明
      */
-    public void setUserToken(UserToken userToken)
+    public static void setUserTokenCache(UserToken userToken)
     {
         if (WebplusUtil.isNotEmpty(userToken) && WebplusUtil.isNotEmpty(userToken.getToken()))
         {
             String userKey = getTokenKey(userToken.getToken());
-            WebplusCache.setUserToken(userKey, userToken);
+            WebplusCache.setString(userKey, WebplusJson.toJson(userToken), EXPIRE_TIME*60);
         }
     }
     /**
@@ -92,12 +111,19 @@ public class WebplusToken {
      * @param 说明
      * @return 说明
      */
-    public void removeUserToken(String token)
+    public static void removeUserToken(HttpServletRequest request)
     {
+    	String token = getToken(request);
         if (WebplusUtil.isNotEmpty(token))
         {
-            String userKey = getTokenKey(token);
-            WebplusCache.delString(userKey);
+        	Claims claims = parseToken(token);
+            // 解析对应的权限以及用户信息
+            String uuid = (String) claims.get(WebplusCons.LOGIN_USER_KEY);
+            if(WebplusUtil.isNotEmpty(uuid)) {
+            	String userKey = getTokenKey(uuid);
+                WebplusCache.delString(userKey);
+            }
+        	
         }
     }
     
@@ -108,13 +134,14 @@ public class WebplusToken {
      * @param userToken 用户信息
      * @return 令牌
      */
-    public String createToken(UserToken userToken)
+    public static String createToken(UserToken userToken)
     {
         String token = WebplusUtil.uuid();
         userToken.setToken(token);
         setUserAgent(userToken);
         refreshToken(userToken);
         Map<String, Object> claims = new HashMap<>();
+        claims.put(WebplusCons.USER_ID_KEY, userToken.getUserId());
         claims.put(WebplusCons.LOGIN_USER_KEY, token);
         return createToken(claims);
     }
@@ -125,30 +152,34 @@ public class WebplusToken {
      * @param token 令牌
      * @return 令牌
      */
-    public void verifyToken(UserToken userToken)
-    {
-        long expireTime = userToken.getExpireTime();
-        long currentTime = System.currentTimeMillis();
-        if (expireTime - currentTime <= MILLIS_MINUTE_TEN)
-        {
-            String token = loginUser.getToken();
-            loginUser.setToken(token);
-            refreshToken(loginUser);
-        }
-    }
+	public static boolean verifyToken(String token) {
+		UserToken userToken=getUserToken(token);
+		if (WebplusUtil.isNotEmpty(userToken)) {
+			Date now = WebplusUtil.getDateTime();
+			int plusMinute = WebplusUtil.minutesBetween(userToken.getRefreshTime(), now);
+			if (plusMinute >= MINUTE_TEN) { // 当前时间大于刷新时间20分钟就失效
+				refreshToken(userToken);
+			}
+
+			return true;
+		}
+
+		return false;
+
+	}
 
     /**
-     * 刷新令牌有效期
      * 
-     * @param loginUser 登录信息
+     * 简要说明：刷新令牌有效期
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月5日 下午3:24:24 
+     * @param 说明
+     * @return 说明
      */
-    public void refreshToken(UserToken userToken)
-    {
-        loginUser.setLoginTime(System.currentTimeMillis());
-        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
-        // 根据uuid将loginUser缓存
-        String userKey = getTokenKey(loginUser.getToken());
-        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+    public static void refreshToken(UserToken userToken)
+    {   
+    	userToken.setRefreshTime(WebplusUtil.getDateTime());
+    	setUserTokenCache(userToken);
     }
     /**
      * 
@@ -204,10 +235,11 @@ public class WebplusToken {
      * @param 说明
      * @return 说明
      */
-    public static String getUsernameFromToken(String token)
+    public static String getUserIdFromToken(String token)
     {
+    	
         Claims claims = parseToken(token);
-        return claims.getSubject();
+        return (String)claims.get(WebplusCons.USER_ID_KEY);
     }
 	/**
 	 * 

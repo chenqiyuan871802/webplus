@@ -11,6 +11,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.token.WebplusToken;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.R;
 
@@ -47,7 +48,7 @@ public class TokenFilter extends AuthenticatingFilter {
     protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) {
     	
     	HttpServletRequest req = (HttpServletRequest) servletRequest;
-         String authorization = req.getParameter(WebplusCons.TOKEN_PARAM);
+         String authorization = WebplusToken.getToken(req);
          if(WebplusUtil.isNotEmpty(authorization)){
         	 TokenRealm token = new  TokenRealm(authorization);
         	 return token;
@@ -62,7 +63,7 @@ public class TokenFilter extends AuthenticatingFilter {
     protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
     	HttpServletRequest req = (HttpServletRequest) servletRequest;
     	HttpServletResponse response = (HttpServletResponse) servletResponse;
-        String token = req.getParameter(WebplusCons.TOKEN_PARAM);
+        String token = WebplusToken.getToken(req);
         R r=null;
         if(WebplusUtil.isEmpty(token)){
         	r= R.error(WebplusCons.EMPTY_TOKEN,"无权访问(Unauthorized):token为空");

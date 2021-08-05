@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.token.WebplusToken;
 import com.toonan.core.vo.R;
 import com.toonan.core.web.BaseController;
 import com.toonan.system.service.UserService;
@@ -74,8 +75,9 @@ public class LoginController extends BaseController{
 	
 	@PostMapping("logout")
 	@ResponseBody
-	R logout(String token) {
-		WebplusCache.removeToken(token);
+	R logout() {
+		
+		WebplusToken.removeUserToken(request);
 		return R.ok();
 	}
 

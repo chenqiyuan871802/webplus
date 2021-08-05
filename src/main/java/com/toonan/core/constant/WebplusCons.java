@@ -16,6 +16,10 @@ public interface WebplusCons {
     /**
      * 令牌前缀
      */
+    public static final String USER_ID_KEY = "user_id_key";
+    /**
+     * 令牌前缀
+     */
     public static final String TOKEN_PREFIX = "Bearer ";
 	
 	/**

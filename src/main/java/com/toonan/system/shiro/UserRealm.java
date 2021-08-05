@@ -14,8 +14,8 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.stereotype.Service;
 
-import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.token.WebplusToken;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.UserToken;
 import com.toonan.system.constant.SystemCons;
@@ -38,7 +38,7 @@ public class UserRealm extends AuthorizingRealm{
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		String token = principals.toString();
-	    UserToken user=WebplusCache.getUserToken(token);
+	    UserToken user=WebplusToken.getUserToken(token);
 		Set<String> perms =new HashSet<String>();
 	    if(WebplusUtil.isNotEmpty(user)){
 	        String whetherSuper=WebplusCons.WHETHER_NO;
@@ -58,7 +58,7 @@ public class UserRealm extends AuthorizingRealm{
 		if(WebplusUtil.isEmpty(token)){
 			throw new AuthenticationException("token为空，系统拒绝访问");
 		}
-		if(WebplusCache.checkAndRefreshToken(token)){
+		if(WebplusToken.verifyToken(token)){
 			return new SimpleAuthenticationInfo(token, token, "userRealm");
 		}
 		throw new AuthenticationException("token过期或无效");
