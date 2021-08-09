@@ -69,7 +69,8 @@
 				webplus.doAjax('doLogin',params,'','','',function(data){
 					sessionStorage.removeItem('lockStatus');
 					webplus.setName('loginAccount',data.user.account);
-					var b=webplus.setName('accessToken',data.token);
+					var token='Bearer '+data.token
+					var b=webplus.setName('accessToken',token);
 					if(b){
 						setTimeout(function(){
 					        window.location.href = webplus.cxt()+'webpage/main.html'; //后台主页

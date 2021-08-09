@@ -85,7 +85,7 @@ public class WebplusQrcode {
      * @param 说明 content 二维码内容 logoPath 图片路径 needCompress是否需要压缩
      * @return 说明
      */
-	private static BufferedImage createQrcodeImage(String content, String logoPath, boolean needCompress)  {
+	public static BufferedImage createQrcodeImage(String content, String logoPath, boolean needCompress)  {
 		
 		
 		try {

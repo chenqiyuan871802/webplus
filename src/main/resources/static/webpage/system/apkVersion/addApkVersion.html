@@ -70,9 +70,9 @@
 			var apkUpload = upload.render({
 				elem: "#apkUpload",
 				exts: 'apk',
-				data: {
-					token: webplus.getToken()
-				},
+				headers:{
+	                	'Authorization':webplus.getToken()
+	                },
 				url: webplus.cxt() + '/system/apkVersion/uploadApk',
 				done: function(res) {
 				

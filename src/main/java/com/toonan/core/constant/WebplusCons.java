@@ -9,6 +9,25 @@ package com.toonan.core.constant;
  */
 public interface WebplusCons {
 	
+	/**
+	 * 默认文件桶
+	 */
+	public static final String DEFAULT_BUCKET="toonan";
+	
+	/**
+	 * 文件服务器
+	 */
+	public static final String SAVE_FILE_WAY_SERVER="1";
+	/**
+	 * 本地磁盘
+	 */
+	public static final String SAVE_FILE_WAY_LOCAL="2";
+	
+	/**
+	 * 默认的window环境和linux环境
+	 */
+	public static final String WINDOWS_ROOT_PATH="C://toonan/";
+	public static final String LINUX_ROOT_PATH="/toonan/";
     /**
      * 令牌前缀
      */
@@ -31,6 +50,10 @@ public interface WebplusCons {
 	 * 文件保存跟路径
 	 */
 	public static final String SAVE_ROOT_PATH_KEY="save_root_path";
+	/**
+	 * 保存文件的方式
+	 */
+	public static final String SAVE_FILE_WAY_KEY="save_file_way";
 	
 	/**
 	 * image图片文件夹

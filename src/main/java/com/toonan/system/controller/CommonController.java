@@ -4,11 +4,13 @@ import java.util.List;
 
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.vo.Item;
+import com.toonan.core.vo.R;
 import com.toonan.core.web.BaseController;
 @Controller
 @RequestMapping("/system/common")
@@ -23,11 +25,11 @@ public class CommonController extends BaseController {
 	 * @param 说明
 	 * @return 说明
 	 */
-	@RequestMapping("listItem")
+	@PostMapping("listItem")
 	@ResponseBody
-	public List<Item> listItem(String typeCode,String filterCode) {
+	public R listItem(String typeCode,String filterCode) {
 		 List<Item> itemList= WebplusCache.getItemList(typeCode,filterCode);
-		 return itemList;
+		 return R.toList(itemList);
 		
 	}
 	

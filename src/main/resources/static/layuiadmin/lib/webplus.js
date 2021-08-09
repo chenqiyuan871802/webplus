@@ -503,7 +503,7 @@ layui.define(['upload'], function (exports) {
             		page=false;
             	}
             }
-            var token='Bearer '+webplus.getToken();
+            var token=webplus.getToken();
             table.render({
                 elem: tableId, //表id
                 url: url,
@@ -826,17 +826,17 @@ layui.define(['upload'], function (exports) {
                     var params = {};
                     params.typeCode = dict;
                     params.filterCode = filter,
-                        params.token = webplus.getToken();
-                    $.post(cxt + "system/common/listItem", params, function (res) {
+                 webplus.doAjax('system/common/listItem',params,'','','3', function (res) {
+                	    var dataList=res.dataList;
                         var str = title == "NONE" ? '' : '<option value="">' + title + '</option>';
-                        $.each(res, function (i) {
-                            if (index == res[i].itemCode) {
+                        $.each(dataList, function (i) {
+                            if (index == dataList[i].itemCode) {
                                 str += "<option selected value='" +
-                                    res[i].itemCode + "'>" +
-                                    res[i].itemName + "</option>";
+                                    dataList[i].itemCode + "'>" +
+                                    dataList[i].itemName + "</option>";
                             } else {
-                                str += "<option value='" + res[i].itemCode +
-                                    "'>" + res[i].itemName + "</option>";
+                                str += "<option value='" + dataList[i].itemCode +
+                                    "'>" + dataList[i].itemName + "</option>";
                             }
                         });
                         $(_this).html(str);
@@ -1296,7 +1296,7 @@ layui.define(['upload'], function (exports) {
                 url = cxt + url;
             }
 
-            var token='Bearer '+webplus.getToken();
+            var token=webplus.getToken();
             $.ajax({
                 type: type,
                 headers:{
@@ -1645,7 +1645,7 @@ layui.define(['upload'], function (exports) {
                 if (imageSrcId.indexOf("#") == -1) {
                     imageSrcId = "#" + imageSrcId;
                 }
-                var imgSrc = webplus.cxt() + "/system/file/showImage?fileName=" + fileName + "&bussType=" + bussType;
+                var imgSrc = webplus.cxt() + "/system/file/showImage?fid=" + fileName + "&bussType=" + bussType;
                 $(imageSrcId).attr("src", imgSrc);
                 // let a = $(imageSrcId).attr("src");
                 return imgSrc;
@@ -1701,10 +1701,12 @@ layui.define(['upload'], function (exports) {
             if (imageSrcId.indexOf("#") == -1) {
                 imageSrcId = "#" + imageSrcId;
             }
-            params.token = webplus.getToken();
             upload.render({
                 elem: uploadId,
                 exts: 'jpg|png|jpeg',
+                headers:{
+                	'Authorization':webplus.getToken()
+                },
                 data: params,
                 url: webplus.cxt() + '/system/file/uploadImage',
                 done: function (data) {
@@ -1854,241 +1856,6 @@ layui.define(['upload'], function (exports) {
                 // 切换页签跳转到指定页面
                 parent.layui.index.openTabsPage(url, name);
             }
-        },
-        /*
-         *初始选择modal
-         * 
-         */
-        initSelectModal: function (params) {
-            $("body").append(webplus.initModalHtml());
-            let $add = "";
-            let $del = "";
-            let $hiddenInput = "";
-            let $problemModal = $("#problem-table-modal");
-            // 添加
-            $("body").on("click", ".add-select-btn,.alert-box-close", function () {
-                $add = $(this);
-                $del = $(this).next("p");
-                $hiddenInput = $(this).parent().find("input");
-               
-                webplus.generateTable(params);
-                $problemModal.toggle();
-            });
-            // 删除
-            $("body").on("click", ".del-select-btn", function () {
-                $del = $(this);
-                $add = $(this).prev("p");
-                $hiddenInput = $(this).parent().find("input");
-                let inputVal = $hiddenInput.val();
-                if (webplus.isEmpty(inputVal)) {
-                    return false
-                }
-                let oldInputVal = inputVal.split(",");
-                let newInputVal = oldInputVal.slice(0, oldInputVal.length - 1);
-                let showgetLists = false
-                try {
-                    showgetLists = showgetList
-                } catch (e) {}
-                if (showgetLists) {
-                    $add.prev("div").html('')
-                    $hiddenInput.val('');
-                    allList = []
-                    getList([])
-                } else {
-                    $hiddenInput.val(newInputVal.join(","));
-                    $add.prev("div").find("span").eq(-1).remove();
-                }
-            });
-
-            // modal查询
-            form.on('submit(tableProblem_btn_query)', function (data) {
-            	var paramsForm=data.field;
-            	for(var key in params){  //默认原来的值
-            		paramsForm[key]=params[key];
-            	}
-                webplus.generateTable(paramsForm);
-                //阻止表单默认提交
-                return false;
-            });
-            // modal选择
-            $("body").on("click", "#tableProblem_btn_select", function () {
-                let data = webplus.getCheckedTableData("problemTable");
-                if (data.length < 1) {
-                    webplus.alertError('请选择要添加的信息');
-                    return false;
-                }
-                let xmid = [],
-                    updateInputVal = [];
-                let inputVal = $hiddenInput.val();
-                if (!webplus.isEmpty(inputVal)) {
-                    updateInputVal = inputVal.split(",");
-                }
-                let showN0 = false
-                let inputValArr = inputVal.split(",")
-                console.log(inputValArr, 'inputValArrinputValArr')
-                data.forEach((item, index) => {
-                    inputValArr.forEach(inArr => {
-                        if (item.xmid == 'N0' && data.length >= 2) {
-                            showN0 = true
-                        } else {
-                            if (inArr && item.xmid == 'N0') {
-                                showN0 = true
-                            }
-                        }
-                    });
-                })
-
-
-                if (showN0) {
-                    webplus.alertError('请勿同时把无隐患项目和有隐患项目一起选择或您已选择无隐患！');
-                    return false;
-                } else {
-                    data.forEach((item, index) => {
-                        if (updateInputVal.indexOf(item.xmid) < 0) {
-                            xmid.push(item.xmid);
-                            $add.prev("div").append(createSpan(index, item));
-                        }
-                    });
-                }
-                let showgetLists = false
-                try {
-                    showgetLists = showgetList
-                } catch (e) {}
-                if (showgetLists) {
-                    let seledata = []
-                    data.forEach((item, index) => {
-                        xmid.forEach(ite => {
-                            if (item.xmid == ite) {
-                                seledata.push(item)
-                            }
-                        })
-                    })
-                    getList(seledata)
-                }
-                let inputNewVal = "";
-                console.log(inputVal, 'inputVal')
-                if (webplus.isEmpty(inputVal)) {
-                    inputNewVal = xmid;
-                } else {
-                    inputNewVal = inputVal.split(",").concat(xmid);
-                }
-                let delN0 = ''
-                let delFlaog = false
-                inputNewVal.forEach((item, index) => {
-                    if (item == 'N0' && inputNewVal.length >= 2) {
-                        delN0 == index
-                        delFlaog = true
-                    }
-                })
-                if (delFlaog) {
-                    inputNewVal.splice(delN0, 1)
-                }
-                $hiddenInput.val(inputNewVal.join(","));
-                $problemModal.toggle();
-            });
-
-            function createSpan(index, item) {
-                let $item = $(`<span class="text-white px-10 ml-10" style="background-color: #009688;">${item.xmid}</span>`);
-                $item.get(0).index = index;
-                $item.get(0).problemData = item;
-                return $item;
-            }
-        },
-        // 初始问题show
-        initModalHtml: function () {
-            return `<div id="problem-table-modal" class="p-fixed modal-box left-0 right-0 bottom-0 top-0 d-none" style="background-color: rgba(0,0,0,.3);z-index: 999;">
-			<div class="alert-box bg-white p-fixed-center showdow-full"  style="height: 490px;width: 700px;">
-				<!-- 头部 -->
-				<div class="alert-box-header p-10 d-flex j-sb a-center p-relative" style="background-color: #009688;">
-					<p class="t-left w-100 font-16 font-w500 text-white title-update">检查条目</p>
-					<div class="layui-layer-setwin alert-box-close">
-						<a class="layui-layer-ico layui-layer-close layui-layer-close1 p-absolute" href="javascript:;"></a>
-					</div>
-				</div>
-				<!-- 头部内容 -->
-				<div class="layui-form pt-10 border-bottom">
-					<div class="layui-form-item d-flex">
-						<div class="d-flex a-center">
-							<label class="px-10">项目编号:</label>
-							<div class="">
-								<input type="text" name="xmid" autocomplete="off" class="layui-input">
-							</div>
-						</div>
-						<div class="d-flex a-center">
-							<label class="px-10">检查项目:</label>
-							<div class="">
-								<input type="text" name="mc" autocomplete="off" class="layui-input">
-							</div>
-						</div>
-						<div class="d-flex a-center pl-20">
-							<button id="tableProblem_btn_query" class="layui-btn"  lay-submit lay-filter="tableProblem_btn_query">查询</button>
-							<button id="tableProblem_btn_select" class="layui-btn">选择</button>
-						</div>
-					</div>
-				</div>
-				<div class="alert-box-header-content pt-0">
-					<table id="problemTable" lay-filter="problemTable"></table>
-				</div>
-			</div>
-		</div>`;
-        },
-        generateTable: function (where) {
-            webplus.showLoading();
-            if (webplus.isEmpty(where)) where = {};
-            table.render({
-                elem: "#problemTable", //表id
-                where: Object.assign({
-                    token: webplus.getToken()
-                }, where),
-                url: webplus.cxt() + "/yhxc/common/listJctm",
-                method: 'POST', //请求方式
-                height: 380, //控制表格高度
-                defaultToolbar: [], //不开启工具栏
-                cellMinWidth: 80, //每列最小宽度
-                loading: false,
-                page: true, //不开启分页
-                cols: [
-                    [{
-                            align: 'center',
-                            type: 'checkbox'
-                        },
-                        {
-                            align: 'center',
-                            field: "xmid",
-                            title: '项目编号',
-                            width: 120
-                        },
-                        {
-                            align: 'center',
-                            field: "mc",
-                            title: '检查项目'
-                        }
-                    ]
-                ],
-                limit: 20, //默认一页显示20条信息
-                limits: [10, 20, 50, 100, 200], //配置每页显示条数下拉框选项
-                response: {
-                    code: 0 //重新规定成功的状态码为 200，table 组件默认为 0
-                },
-                parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
-                    if (res.appCode == 1) {
-                        return {
-                            "code": 0, //解析接口状态
-                            "count": res.count, //解析数据长度
-                            "data": res.dataList //解析数据列表
-                        };
-                    }
-                },
-                done: function (res) { //表格加载成功后执行的函数
-                    webplus.hideLoading();
-                }
-            });
-            webplus.hideLoading();
-            // 地址表格双击事件
-            table.on('rowDouble(problemTable)', function (obj) {
-                let data = obj.data;
-                console.log(data);
-            });
         },
         /**
          * 获取选中的勾选的表格数据

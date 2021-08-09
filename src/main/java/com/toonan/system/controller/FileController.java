@@ -23,6 +23,7 @@ import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
+import com.toonan.core.minio.MinioClientUtil;
 import com.toonan.core.util.WebplusFile;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.R;
@@ -50,22 +51,34 @@ public class FileController extends BaseController{
 	 * @return
 	 */
 	@RequestMapping(value = "showImage")
-	public void showImage(String fileName,HttpServletRequest request,HttpServletResponse response) {
-		if(WebplusUtil.isNotEmpty(fileName)){
-			String folderPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY	);
-			String filePath=folderPath+File.separator;
-			if(fileName.indexOf("Q")>-1){//
-				 filePath=folderPath+File.separator+WebplusCons.QRCODE_PATH;
-			}else {
-				 filePath=folderPath+File.separator+WebplusCons.IMAGE_PATH;
-			}
-			
-			filePath+=File.separator+fileName;
-			
-			WebplusFile.downloadFile(request, response,  filePath, fileName);
+	public void showImage(String fid,String fileBucket,HttpServletRequest request,HttpServletResponse response) {
+		if (WebplusUtil.isEmpty(fileBucket)) {
+			fileBucket = WebplusCons.DEFAULT_BUCKET;
 		}
-		
-		
+		if (WebplusUtil.isNotEmpty(fid)) {
+			int len=fid.indexOf("_");
+			String secondBucket="";
+            if(len>-1) {
+            	secondBucket=fid.substring(0,len);
+            }
+			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
+			if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
+				String folderPath = WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
+				String filePath = folderPath + File.separator + fileBucket+File.separator+secondBucket + File.separator + fid;
+				File file = new File(filePath);
+				if (file.exists()) {
+					WebplusFile.downloadFile(request, response, filePath, fid);
+				}
+
+			} else {
+				String objectKey=fid;
+				if(WebplusUtil.isNotEmpty(secondBucket)) {
+					objectKey=secondBucket+"/"+fid;
+				}
+				MinioClientUtil.downloadFile(fileBucket, objectKey, response);
+			}
+
+		}
 		
 	}
 	/**

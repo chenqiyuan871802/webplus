@@ -8,6 +8,7 @@ import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
+import com.toonan.core.minio.MinioClientUtil;
 import com.toonan.core.util.WebplusFile;
 import com.toonan.core.util.WebplusQrcode;
 import com.toonan.core.util.WebplusUtil;
@@ -162,7 +163,7 @@ public class ApkVersionController extends BaseController {
 		if(WebplusUtil.isNotEmpty(file)&&file.getSize()>0){
 			
 			try {
-				String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
+				String rootPath=WebplusFile.getRootPath();
 				String folderPath=rootPath+File.separator+WebplusCons.APK_PATH;
 				String apkName=file.getOriginalFilename();
 				String apkFileName=WebplusUtil.uuid()+"."+WebplusFile.getFileType(apkName);
@@ -194,17 +195,24 @@ public class ApkVersionController extends BaseController {
 	public R showDownloadQrcode(String id){
 		ApkVersion apkVersion = apkVersionService.selectById(id);
 		if (WebplusUtil.isNotEmpty( apkVersion)) {
-			String qrcodeImage="Q"+apkVersion.getVersionId()+".png";
-			String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
-			String qrcodeUrl = WebplusCache.getParamValue(WebplusCons.REQUEST_URL_KEY) + "/file/downloadApk?fid="
+			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
+			
+			String qrcodeImage=WebplusCons.QRCODE_PATH+"_"+apkVersion.getVersionId()+".png";
+			String rootPath=WebplusFile.getRootPath();
+			String qrcodeUrl = WebplusCache.getParamValue(WebplusCons.REQUEST_URL_KEY) + "/system/file/downloadApk?fid="
 					+apkVersion.getFid();
-			String destPath=rootPath+File.separator+WebplusCons.QRCODE_PATH;
-			String filePath=destPath+File.separator+qrcodeImage;
-			File file=new File(filePath);
-			if(!file.exists()){
-				 WebplusQrcode.createQrcodeImage(qrcodeUrl, destPath, qrcodeImage); //创建二维码
+			if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
+				
+				String destPath=rootPath+File.separator+WebplusCons.QRCODE_PATH;
+				String filePath=destPath+File.separator+qrcodeImage;
+				File file=new File(filePath);
+				if(!file.exists()){
+					 WebplusQrcode.createQrcodeImage(qrcodeUrl, destPath, qrcodeImage); //创建二维码
+				}
+			}else {
+				String objectKey=WebplusCons.QRCODE_PATH+"/"+qrcodeImage;
+				MinioClientUtil.uploadQrcode( WebplusCons.DEFAULT_BUCKET,objectKey, qrcodeUrl);
 			}
-           
             Dto dataDto=Dtos.newDto("fileName",qrcodeImage);
             return R.toData(dataDto);
 		}

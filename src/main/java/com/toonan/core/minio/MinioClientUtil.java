@@ -1,11 +1,22 @@
 package com.toonan.core.minio;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.toonan.core.util.WebplusQrcode;
+import com.toonan.core.util.WebplusUtil;
 
 import io.minio.BucketExistsArgs;
 import io.minio.CopyObjectArgs;
@@ -31,6 +42,7 @@ import io.minio.http.Method;
  */
 public class MinioClientUtil {
 	
+	private static final int BUFFER = 1024*2;
 	/**
 	 * 日志
 	 */
@@ -140,10 +152,12 @@ public class MinioClientUtil {
      */
     public static String uploadLocalFile(String bucket, String objectKey, String filePath) {
         try {
+        	
 			MinioClient client = MinioClient.builder().endpoint(ENDPOINT).credentials(ACCESS_KEY, SECRET_KEY).build();
+			// 判断桶是否存在
 			boolean isExist = client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
-			if (!isExist) { //判断桶是否存在不存在，就创建
-				// 新建桶
+			if (!isExist) {
+							// 新建桶
 				client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
 			} 
 			client.uploadObject(UploadObjectArgs.builder().bucket(bucket).object(objectKey).filename(filePath)
@@ -154,8 +168,65 @@ public class MinioClientUtil {
 		}
         return "";
     }
-
     
+    
+    /**
+	 * 
+	 * 简要说明：上传文件流到对象文件服务器minio
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年4月3日 下午9:31:42
+	 * @param bucket      桶
+	 * @param objectKey   文件key
+	 * @param inputStream 文件输入流
+	 * @return 文件url
+	 */
+    public static String uploadFile(String bucket, String objectKey, MultipartFile file) {
+        try {
+        	if(file!=null&&file.getSize()>0) {
+        		InputStream inputStream=file.getInputStream();
+        		
+    			return uploadInputStream(bucket,objectKey,inputStream);
+        	}
+		
+		} catch (Exception e) {
+			log.error("上传文件流到对象文件服务minio失败："+e);
+		}
+        return "";
+    }
+    /**
+     * 
+     * 简要说明：上传二维码照片
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年8月9日 上午9:15:17 
+     * @param 说明
+     * @return 说明
+     */
+    public static String uploadQrcode(String bucket, String objectKey, String content) {
+    	BufferedImage image = WebplusQrcode.createQrcodeImage(content, "",false);
+    	InputStream input=bufferedImageToInputStream(image); 
+    	if(WebplusUtil.isNotEmpty(input	)) {
+    		return uploadInputStream(bucket,objectKey,input);
+    	}
+    	return "";
+    
+    }
+    
+    /**
+     * 将BufferedImage转换为InputStream
+     * @param image
+     * @return
+     */
+    public static InputStream bufferedImageToInputStream(BufferedImage image){
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "png", os);
+            InputStream input = new ByteArrayInputStream(os.toByteArray());
+            return input;
+        } catch (IOException e) {
+        	log.error("图片流转出输入流错误："+e);
+        }
+        return null;
+    }
 	/**
 	 * 
 	 * 简要说明：上传文件流到对象文件服务器minio
@@ -169,11 +240,18 @@ public class MinioClientUtil {
     public static String uploadInputStream(String bucket, String objectKey, InputStream inputStream) {
         try {
 			MinioClient client = MinioClient.builder().endpoint(ENDPOINT).credentials(ACCESS_KEY, SECRET_KEY).build();
+			// 判断桶是否存在
+		      boolean isExist = client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+			if (!isExist) {
+							// 新建桶
+				client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+			} 
 			client.putObject(PutObjectArgs.builder().bucket(bucket).object(objectKey)
 					.stream(inputStream, inputStream.available(), -1).contentType("image/png").build());
 			return getObjectPrefixUrl(bucket) + objectKey;
 		} catch (Exception e) {
-			log.error("上传文件流到对象文件服务minio失败："+e);
+			log.error("上传文件流到对象文件服务失败："+e);
+			
 		}
         return "";
     }
@@ -194,6 +272,47 @@ public class MinioClientUtil {
 			log.error("从对象文件服务minio下载文件失败："+e);
 		}
         return null;
+    }
+    /**
+     * 
+     * 简要说明：通过网络流下载文件 服务器
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2021年5月8日 下午5:40:13 
+     * @param 说明
+     * @return 说明
+     */
+    public static boolean downloadFile(String bucket,String objectKey,HttpServletResponse response) {
+    	  InputStream inputStream=downloadFile(bucket,objectKey);
+    	  if(WebplusUtil.isNotEmpty(inputStream)){
+	    	  OutputStream os = null;
+				try {
+						// 文件以流的方式发送到客户端浏览器
+						os = response.getOutputStream();
+						byte[] buffer = new byte[8096];
+						int byteread = 0;
+						while ((byteread = inputStream.read(buffer, 0, BUFFER)) != -1) {
+							os.write(buffer, 0, byteread);
+							os.flush();
+						}
+						os.close();
+						
+						return true;
+
+				} catch (Exception e) {
+					log.error("通过流下载文件出错："+e);
+				} finally {
+					if (inputStream != null) {
+						try {
+							inputStream.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+		
+	      }
+	      log.error("下载文件没有文件流返回");
+	      return false;
     }
     /**
      * 简要说明： 下载文件存储在指定位置
@@ -300,9 +419,9 @@ public class MinioClientUtil {
 
 
     public static void main(String[] args) {
-    	ENDPOINT="http://192.168.0.100:9000/";
+    	ENDPOINT="http://192.168.37.133:9000/";
     	ACCESS_KEY="toonan";
-    	SECRET_KEY="Toonan2021";
+    	SECRET_KEY="Toonan2020";
     	//deleteFile("toonan","202104032159.jpg");
     	uploadLocalFile("toonan","20210403/202104032159.jpg","E://chenqiyuan.jpg");
     	//System.out.print(getSignedUrl("toonan","20210403/202104032159.jpg",400));
