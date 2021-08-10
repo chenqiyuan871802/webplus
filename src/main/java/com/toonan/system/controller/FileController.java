@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.assertj.core.util.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,7 +45,7 @@ import com.toonan.core.web.BaseController;
 @RequestMapping("/system/file")
 public class FileController extends BaseController{
 	
-	
+	private static Logger logger = LoggerFactory.getLogger(FileController.class);
 	/**
 	 * 显示图片
 	 * @param response
@@ -52,9 +54,7 @@ public class FileController extends BaseController{
 	 */
 	@RequestMapping(value = "showImage")
 	public void showImage(String fid,String fileBucket,HttpServletRequest request,HttpServletResponse response) {
-		if (WebplusUtil.isEmpty(fileBucket)) {
-			fileBucket = WebplusCons.DEFAULT_BUCKET;
-		}
+		
 		if (WebplusUtil.isNotEmpty(fid)) {
 			int len=fid.indexOf("_");
 			String secondBucket="";
@@ -64,13 +64,16 @@ public class FileController extends BaseController{
 			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
 			if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
 				String folderPath = WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
-				String filePath = folderPath + File.separator + fileBucket+File.separator+secondBucket + File.separator + fid;
+				String filePath = folderPath + File.separator +secondBucket + File.separator + fid;
 				File file = new File(filePath);
 				if (file.exists()) {
 					WebplusFile.downloadFile(request, response, filePath, fid);
 				}
 
 			} else {
+				if (WebplusUtil.isEmpty(fileBucket)) {
+					fileBucket = WebplusCons.DEFAULT_BUCKET;
+				}
 				String objectKey=fid;
 				if(WebplusUtil.isNotEmpty(secondBucket)) {
 					objectKey=secondBucket+"/"+fid;
@@ -147,29 +150,42 @@ public class FileController extends BaseController{
 	 * @param 说明
 	 * @return 说明
 	 */
-	@PostMapping("uploadImage")
+	@PostMapping("uploadFile")
 	@ResponseBody
-	public R uploadImage(@RequestParam(value = "file", required = false) MultipartFile file,String fileType,
+	public R uploadFile(@RequestParam(value = "file", required = false) MultipartFile file,
 			HttpServletRequest request,HttpServletResponse response) {
-		if(WebplusUtil.isNotEmpty(file)&&file.getSize()>0){
-			
+		if (WebplusUtil.isNotEmpty(file) && file.getSize() > 0) {
+
 			try {
-				String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
-				String folderPath=rootPath+File.separator+WebplusCons.IMAGE_PATH;
-				String imageName=file.getOriginalFilename();
-				String imageFileName=WebplusUtil.createFileId()+"."+WebplusFile.getFileType(imageName);
-				WebplusFile.createFolder(folderPath); 
-				File targetFile = new File(folderPath,imageFileName); 
-				file.transferTo(targetFile);
-				return R.ok().put("fileName", imageName).put("fid", imageFileName);
+				String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
+				String fileName = file.getOriginalFilename();
+				String fileType = WebplusFile.getFileType(fileName);
+				String secondFolder = "";
+				if ("apk".equals(fileType)) {
+					secondFolder = "apk";
+				} else {
+					secondFolder = WebplusUtil.getDateStr("YYYYMM");
+				}
+				String fid = secondFolder + "_" + WebplusUtil.uuid() + "." + fileType;
+				String rootPath = WebplusFile.getRootPath();
+				if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
+					String folderPath = rootPath + File.separator + secondFolder;
+					WebplusFile.createFolder(folderPath);
+					File targetFile = new File(folderPath, fid);
+					file.transferTo(targetFile);
+				} else {
+				    String  objectKey=secondFolder+"/"+fid;
+                    MinioClientUtil.uploadFile(WebplusCons.DEFAULT_BUCKET, objectKey, file);
+				}
+				return R.ok().put("fileName", fileName).put("fid", fid);
+
 			} catch (Exception e) {
-				
-				e.printStackTrace();
-			} 
+                 logger.error("上传文件失败："+e);
+			}
 			return R.error("上传文件失败");
-			 
+
 		}
-       
+
 		return R.error("无文件流上传");
 	}
 	/**

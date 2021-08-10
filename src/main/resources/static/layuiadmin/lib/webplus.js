@@ -797,15 +797,24 @@ layui.define(['upload'], function (exports) {
             }
             var searchFormObj = $(searchForm);
             var $select = searchFormObj.find('select');
-            if ($select.length < 1) return false;
-            $.each($select, function () {
+            var len=$select.length;
+            if (len< 1) {
+
+            	  if (typeof (loadDataBack) === "function"){
+            		  
+            		  loadDataBack();
+            	  }
+            	
+            	return false;
+            }
+            $.each($select, function (index) {
                 var _this = this;
                 var dict = $(this).attr('lay-select-dict');
                 var title = $(this).attr('lay-select-title');
                 // lay-filter-code = '2,3' 过滤值以","分隔
                 var filter = $(this).attr('lay-filter-code');
                 // 默认选中的的option lay-select-code为option的value值
-                var index = $(this).attr('lay-select-code');
+                var indexCode = $(this).attr('lay-select-code');
                 // 是否禁用 true 禁用 false 不禁用 默认false
                 var disabled = $(this).attr('lay-select-disabled');
 
@@ -830,7 +839,7 @@ layui.define(['upload'], function (exports) {
                 	    var dataList=res.dataList;
                         var str = title == "NONE" ? '' : '<option value="">' + title + '</option>';
                         $.each(dataList, function (i) {
-                            if (index == dataList[i].itemCode) {
+                            if (indexCode == dataList[i].itemCode) {
                                 str += "<option selected value='" +
                                     dataList[i].itemCode + "'>" +
                                     dataList[i].itemName + "</option>";
@@ -846,9 +855,15 @@ layui.define(['upload'], function (exports) {
                         form.render('select');
                     }, 'json');
                 }
+                if(index=len){
+                    if (typeof (loadDataBack) === "function"){
+                		  
+                		  loadDataBack();
+                	  }
+                 }
             });
             // 加载数据
-            if (typeof (loadDataBack) === "function") loadDataBack();
+            
         },
         /*
          *初始化表单
@@ -866,7 +881,9 @@ layui.define(['upload'], function (exports) {
             }
             if (webplus.isEmpty(url)) {
                 table.reload(tableId, {
-
+                	page: {
+                		curr: 1
+                	},
                     where: params
                 });
             } else {
@@ -876,7 +893,9 @@ layui.define(['upload'], function (exports) {
                 }
                 table.reload(tableId, {
                     url: url,
-                    page: 1,
+                    page: {
+                		curr: 1
+                	},
                     where: params
                 });
             }
@@ -1635,8 +1654,8 @@ layui.define(['upload'], function (exports) {
         /**
          * 显示图片
          */
-        showImage: function (imageSrcId, fileName, bussType) {
-            if (!webplus.isEmpty(fileName)) {
+        showImage: function (imageSrcId, fid) {
+            if (!webplus.isEmpty(fid)) {
                 if (webplus.isEmpty(imageSrcId)) {
                     webplus.alertWarn("显示图片文件名(imageSrcId)不能为空");
                     return false;
@@ -1645,15 +1664,16 @@ layui.define(['upload'], function (exports) {
                 if (imageSrcId.indexOf("#") == -1) {
                     imageSrcId = "#" + imageSrcId;
                 }
-                var imgSrc = webplus.cxt() + "/system/file/showImage?fid=" + fileName + "&bussType=" + bussType;
+                var imgSrc = webplus.cxt() + "/system/file/showImage?fid=" + fid;
                 $(imageSrcId).attr("src", imgSrc);
                 // let a = $(imageSrcId).attr("src");
                 return imgSrc;
             }
             return '';
         },
-        showDownload: function (imageSrcId, fileName) {
-            if (!webplus.isEmpty(fileName)) {
+        
+        showDownload: function (imageSrcId, fid) {
+            if (!webplus.isEmpty(fid)) {
                 if (webplus.isEmpty(imageSrcId)) {
                     webplus.alertWarn("显示图片文件名(imageSrcId)不能为空");
                     return false;
@@ -1662,7 +1682,7 @@ layui.define(['upload'], function (exports) {
                 if (imageSrcId.indexOf("#") == -1) {
                     imageSrcId = "#" + imageSrcId;
                 }
-                var imgSrc = webplus.cxt() + "/system/file/downloadFile?fileName=" + fileName;
+                var imgSrc = webplus.cxt() + "/system/file/downloadFile?fid=" + fid;
                 $(imageSrcId).attr("src", imgSrc);
                 return imgSrc;
             }
@@ -1676,7 +1696,7 @@ layui.define(['upload'], function (exports) {
          * imageNameId 图片控件ID
          * iamgeSrcId 图片路径显示ID
          */
-        uploadImage: function (uploadId, params, imageNameId, imageSrcId, bussType) {
+        uploadImage: function (uploadId, params, imageNameId, imageSrcId) {
             if (webplus.isEmpty(uploadId)) {
                 webplus.alertWarn("上传控件ID(uploadId)不能为空");
                 return false;
@@ -1710,10 +1730,10 @@ layui.define(['upload'], function (exports) {
                 data: params,
                 url: webplus.cxt() + '/system/file/uploadImage',
                 done: function (data) {
-                    //如果上传成功
+                     
                     if (data.appCode == '1') {
                         webplus.alertSuccess('上传成功');
-                        webplus.showImage(imageSrcId, data.fid, bussType);
+                        webplus.showImage(imageSrcId, data.fid);
                         $(imageNameId).val(data.fid);
                     } else {
                         webplus.alertError(data.appMsg);
@@ -1726,10 +1746,67 @@ layui.define(['upload'], function (exports) {
 
 
         },
+        //上传文件
+        uploadFile: function (uploadId, params,exts,callback) {
+            if (webplus.isEmpty(uploadId)) {
+                webplus.alertWarn("上传控件ID(uploadId)不能为空");
+                return false;
+            }
+          
+            if (webplus.isEmpty(params)) {
+                params = {};
+            }
+            if (uploadId.indexOf("#") == -1) {
+                uploadId = "#" + uploadId;
+            }
+            upload.render({
+                elem: uploadId,
+                exts: exts,
+                headers:{
+                	'Authorization':webplus.getToken()
+                },
+                data: params,
+                url: webplus.cxt() + '/system/file/uploadFile',
+                done: function (data) {
+                	 if (data.appCode == '-2' || data.appCode == '-3') {
+                         webplus.alertError('访问令牌非法，系统将重置到登陆页面，错误信息：' + data.appMsg);
+                         setTimeout(function () {
+                             if (self != top) {
+
+                                 parent.parent.location.href = webplus.cxt();
+                             } else {
+                                 window.location.href = webplus.cxt();
+                             }
+
+
+                         }, 1000)
+                     } else {
+                    	 if (data.appCode == '1') {
+                    		 if (typeof (callback) === "function") {
+
+                                 callback(data);
+                             }else{
+                            	  webplus.alertSuccess('上传成功');
+                             }
+                         } else {
+                             webplus.alertError(data.appMsg);
+                         }
+                         
+                     }
+
+                },
+                error: function () {
+                    webplus.alertError('上失败,网络超时或程序处理异常');
+                }
+            });
+
+
+        },
+        
         /**
          * 通用Excel下载 url地址，searchForm layui-form lay-filter参数
          */
-        exportExcel: function (url, searchForm, fileName, tableId, cellKey, paramKey) {
+        exportExcel: function (url, searchForm, fid, tableId, cellKey, paramKey) {
             if (webplus.isEmpty(url)) {
                 webplus.alertWarn("请求地址url不能为空");
                 return false;
@@ -1751,7 +1828,7 @@ layui.define(['upload'], function (exports) {
 
 
             webplus.doAjax(url, params, "", "", "3", function (data) {
-                window.location.href = webplus.cxt() + "/system/file/downloadExcelFile?fid=" + data.fid + "&fileName=" + fileName + "&token=" + webplus.getToken();
+                window.location.href = webplus.cxt() + "/system/file/downloadExcelFile?fid=" + data.fid + "&fid=" + fid + "&token=" + webplus.getToken();
 
             });
 

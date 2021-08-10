@@ -67,26 +67,16 @@
 		    webplus=layui.webplus,
 		    upload=layui.upload;
 			webplus.initSelect('saveForm');
-			var apkUpload = upload.render({
-				elem: "#apkUpload",
-				exts: 'apk',
-				headers:{
-	                	'Authorization':webplus.getToken()
-	                },
-				url: webplus.cxt() + '/system/apkVersion/uploadApk',
-				done: function(res) {
+			
+			webplus.uploadFile('apkUpload','','apk',function(res){
 				
-					if (res.appCode == '1') {
-						$("#fid").val(res.fid);		
-						$("#apkName").val(res.apkName);		
-					}else{
-						layer.msg('上传APK文件出错');
-					}
-				},
-				error: function() {
-					layer.msg('上传APK文件网络异常');
+				if (res.appCode == '1') {
+					$("#fid").val(res.fid);		
+					$("#apkName").val(res.fileName);		
 				}
-			});
+				
+			})
+		
 			
 			//提交表单
 			form.on('submit(saveSubmit)', function(data) {
