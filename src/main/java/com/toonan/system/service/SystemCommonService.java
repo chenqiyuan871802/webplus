@@ -26,55 +26,7 @@ public class SystemCommonService   {
     
 	@Autowired
 	private SystemCommonMapper systemCommonMapper;
-	/**
-	 * 
-	 * 简要说明：查询街镇
-	 * 编写者：陈骑元
-	 * 创建时间：2018年12月17日 下午3:23:31
-	 * @param 说明
-	 * @return 说明
-	 */
-	public List<Item> listJz(String xzq){
-		
-		return systemCommonMapper.listJz(xzq);
-	}
-	/**
-	 * 
-	 * 简要说明：查询街镇
-	 * 编写者：陈骑元
-	 * 创建时间：2018年12月17日 下午3:23:31
-	 * @param 说明
-	 * @return 说明
-	 */
-	public List<Item> listJwh(String jz){
-		
-		return systemCommonMapper.listJwh(jz);
-	}
-	/**
-	 * 
-	 * 简要说明：查询
-	 * 编写者：陈骑元
-	 * 创建时间：2018年12月17日 下午3:23:31
-	 * @param 说明
-	 * @return 说明
-	 */
-	public List<Item> listPcs(String jz){
-		
-		return systemCommonMapper.listPcs(jz);
-	}
-	/**
-	 * 
-	 * 简要说明：分页查询街路巷
-	 * 编写者：陈骑元
-	 * 创建时间：2018年12月17日 下午3:23:31
-	 * @param 说明
-	 * @return 说明
-	 */
-	public Page<Item> listJddm(Dto pDto){
-		 Query<Item> query=new Query<Item>(pDto);
-		 query.setRecords(systemCommonMapper.listJddm(query, pDto));
-		 return query;
-	}
+	
     /**
      * 
      * 简要说明：查询授权角色
@@ -102,16 +54,5 @@ public class SystemCommonService   {
     
     }
     
-    /**
-	 * 
-	 * 简要说明：查询
-	 * 编写者：陈骑元
-	 * 创建时间：2018年12月17日 下午3:23:31
-	 * @param 说明
-	 * @return 说明
-	 */
-	public Item selectJddm(String jddm){
-		
-		return systemCommonMapper.selectJddm(jddm);
-	}
+ 
 }

@@ -3,7 +3,7 @@ package com.toonan.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import com.toonan.core.minio.MinioClientUtil;
+import com.toonan.core.minio.WebplusMinio;
 import com.toonan.core.ocr.BaiduOcr;
 
 /**
@@ -23,17 +23,17 @@ public class WebplusConfig  {
 	
 	@Value("${minio.endpoint}")
 	public void setEndpoint(String endpoint) {
-		MinioClientUtil.ENDPOINT = endpoint;
+		WebplusMinio.ENDPOINT = endpoint;
 	}
 	
 	@Value("${minio.accessKey}")
 	public void setAccessKey(String accessKey) {
-		MinioClientUtil.ACCESS_KEY=accessKey;
+		WebplusMinio.ACCESS_KEY=accessKey;
 	}
 	
 	@Value("${minio.secretKey}")
 	public void setSecretKey(String secretKey) {
-		MinioClientUtil.SECRET_KEY=secretKey;
+		WebplusMinio.SECRET_KEY=secretKey;
 	}
 	
  

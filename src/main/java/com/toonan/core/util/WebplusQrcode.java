@@ -190,7 +190,7 @@ public class WebplusQrcode {
 		try {
 			BufferedImage image = WebplusQrcode.createQrcodeImage(content, logoPath, needCompress);
 			mkdirs(destPath);
-			String fileName = WebplusUtil.uuid()+ "." + FORMAT.toLowerCase();
+			String fileName = WebplusId.uuid()+ "." + FORMAT.toLowerCase();
 			ImageIO.write(image, FORMAT, new File(destPath + "/" + fileName));
 			return fileName;
 		} catch (IOException e) {

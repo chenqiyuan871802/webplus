@@ -1909,15 +1909,7 @@ public class WebplusUtil {
 		}
 	}
 
-	/**
-	 * 返回去除连接符-的UUID
-	 * 
-	 * @return
-	 */
-	public static String uuid() {
-		String uuid = uuid2();
-		return uuid.replaceAll("-", "");
-	}
+	
 	/**
      * 
      * 简要说明：创建文件编号
@@ -1946,14 +1938,7 @@ public class WebplusUtil {
 	public static String createFileId(String prefix){
 		return prefix+WebplusUtil.getCurrentDate("yyMMddHHmmssSSS");
 	}
-	/**
-	 * 返回原生UUID
-	 * 
-	 * @return
-	 */
-	public static String uuid2() {
-		return UUID.randomUUID().toString();
-	}
+	
 	/**
 	 * 
 	 * 简要说明：比较两个日期像大小
@@ -2687,7 +2672,7 @@ public class WebplusUtil {
 	 */
 	public static void main(String args[]) throws ParseException {
 		String str="sfwerwrewsfsfsfs";
-		System.out.println(WebplusUtil.checkMobile("18825085865"));
+		System.out.println(WebplusId.getIdStr());
 		
 	}
 	

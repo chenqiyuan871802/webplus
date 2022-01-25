@@ -1,29 +1,32 @@
 package com.toonan.system.controller;
 
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.plugins.Page;
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
-import com.toonan.core.minio.MinioClientUtil;
+import com.toonan.core.minio.WebplusMinio;
 import com.toonan.core.util.WebplusFile;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusQrcode;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.R;
 import com.toonan.core.web.BaseController;
 import com.toonan.system.model.ApkVersion;
 import com.toonan.system.service.ApkVersionService;
-
-import java.io.File;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.springframework.stereotype.Controller;
 
 /**
  * <p>
@@ -166,7 +169,7 @@ public class ApkVersionController extends BaseController {
 				String rootPath=WebplusFile.getRootPath();
 				String folderPath=rootPath+File.separator+WebplusCons.APK_PATH;
 				String apkName=file.getOriginalFilename();
-				String apkFileName=WebplusUtil.uuid()+"."+WebplusFile.getFileType(apkName);
+				String apkFileName=WebplusId.uuid()+"."+WebplusFile.getFileType(apkName);
 				WebplusFile.createFolder(folderPath); 
 				File targetFile = new File(folderPath,apkFileName); 
 				file.transferTo(targetFile);
@@ -211,7 +214,7 @@ public class ApkVersionController extends BaseController {
 				}
 			}else {
 				String objectKey=WebplusCons.QRCODE_PATH+"/"+qrcodeImage;
-				MinioClientUtil.uploadQrcode( WebplusCons.DEFAULT_BUCKET,objectKey, qrcodeUrl);
+				WebplusMinio.uploadQrcode( WebplusCons.DEFAULT_BUCKET,objectKey, qrcodeUrl);
 			}
             Dto dataDto=Dtos.newDto("fileName",qrcodeImage);
             return R.toData(dataDto);

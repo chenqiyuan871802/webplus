@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusJson;
 import com.toonan.core.util.WebplusServlet;
 import com.toonan.core.util.WebplusUtil;
@@ -136,7 +137,7 @@ public class WebplusToken {
      */
     public static String createToken(UserToken userToken)
     {
-        String token = WebplusUtil.uuid();
+        String token = WebplusId.uuid();
         userToken.setToken(token);
         setUserAgent(userToken);
         refreshToken(userToken);

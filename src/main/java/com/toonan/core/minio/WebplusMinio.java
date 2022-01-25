@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +16,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toonan.core.util.WebplusFile;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusQrcode;
 import com.toonan.core.util.WebplusUtil;
 
@@ -40,13 +43,12 @@ import io.minio.http.Method;
  * @Copyright: 2021 www.toonan.com Inc. All rights reserved.
  *             注意：本内容仅限于广州市图南软件有限公司内部传阅，禁止外泄以及用于其他的商业目
  */
-public class MinioClientUtil {
+public class WebplusMinio {
 	
-	private static final int BUFFER = 1024*2;
 	/**
 	 * 日志
 	 */
-	private static Log log = LogFactory.getLog(MinioClientUtil.class);
+	private static Log log = LogFactory.getLog(WebplusMinio.class);
     /**
      * 对象存储服务的URL
      */
@@ -75,6 +77,7 @@ public class MinioClientUtil {
      * bucket权限-读写
      */
     private static final String READ_WRITE = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetBucketLocation\",\"s3:ListBucket\",\"s3:ListBucketMultipartUploads\"],\"Resource\":[\"arn:aws:s3:::" + BUCKET_PARAM + "\"]},{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:DeleteObject\",\"s3:GetObject\",\"s3:ListMultipartUploadParts\",\"s3:PutObject\",\"s3:AbortMultipartUpload\"],\"Resource\":[\"arn:aws:s3:::" + BUCKET_PARAM + "/*\"]}]}";
+    private static final int BUFFER = 1024*2;
     /**
      * 
      * 简要说明：获取 文件url前半段
@@ -180,7 +183,7 @@ public class MinioClientUtil {
 	 * @param inputStream 文件输入流
 	 * @return 文件url
 	 */
-    public static String uploadFile(String bucket, String objectKey, MultipartFile file) {
+    public static boolean uploadFile(String bucket, String objectKey, MultipartFile file) {
         try {
         	if(file!=null&&file.getSize()>0) {
         		InputStream inputStream=file.getInputStream();
@@ -191,7 +194,7 @@ public class MinioClientUtil {
 		} catch (Exception e) {
 			log.error("上传文件流到对象文件服务minio失败："+e);
 		}
-        return "";
+        return false;
     }
     /**
      * 
@@ -201,13 +204,13 @@ public class MinioClientUtil {
      * @param 说明
      * @return 说明
      */
-    public static String uploadQrcode(String bucket, String objectKey, String content) {
+    public static boolean  uploadQrcode(String bucket, String objectKey, String content) {
     	BufferedImage image = WebplusQrcode.createQrcodeImage(content, "",false);
     	InputStream input=bufferedImageToInputStream(image); 
     	if(WebplusUtil.isNotEmpty(input	)) {
     		return uploadInputStream(bucket,objectKey,input);
     	}
-    	return "";
+    	return false;
     
     }
     
@@ -237,7 +240,7 @@ public class MinioClientUtil {
 	 * @param inputStream 文件输入流
 	 * @return 文件url
 	 */
-    public static String uploadInputStream(String bucket, String objectKey, InputStream inputStream) {
+    public static boolean uploadInputStream(String bucket, String objectKey, InputStream inputStream) {
         try {
 			MinioClient client = MinioClient.builder().endpoint(ENDPOINT).credentials(ACCESS_KEY, SECRET_KEY).build();
 			// 判断桶是否存在
@@ -247,13 +250,41 @@ public class MinioClientUtil {
 				client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
 			} 
 			client.putObject(PutObjectArgs.builder().bucket(bucket).object(objectKey)
-					.stream(inputStream, inputStream.available(), -1).contentType("image/png").build());
-			return getObjectPrefixUrl(bucket) + objectKey;
+					.stream(inputStream, inputStream.available(), -1).build());
+			return true;
 		} catch (Exception e) {
 			log.error("上传文件流到对象文件服务失败："+e);
 			
 		}
-        return "";
+        return false;
+    }
+    
+    
+    /**
+	 * 
+	 * 简要说明：通过base64上传到文件服务器
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2021年4月3日 下午9:31:42
+	 * @param bucket      桶
+	 * @param objectKey   文件key
+	 * @param inputStream 文件输入流
+	 * @return true或false
+	 */
+    public static boolean  uploadBase64File(String bucket, String objectKey, String base64) {
+        try {
+        	InputStream inputStream=WebplusFile.getBase64InputStream(base64);
+        	if(WebplusUtil.isNotEmpty(inputStream)) {
+        		
+        		return uploadInputStream(bucket,objectKey,inputStream);
+        		
+        	}
+			
+        
+		} catch (Exception e) {
+			log.error("上传文件流到对象文件服务失败："+e);
+			
+		}
+        return false;
     }
 
     /**
@@ -286,6 +317,13 @@ public class MinioClientUtil {
     	  if(WebplusUtil.isNotEmpty(inputStream)){
 	    	  OutputStream os = null;
 				try {
+					
+					
+					
+					objectKey = URLEncoder.encode(objectKey, "UTF-8");
+					response.reset();
+					response.setHeader("Content-Disposition", "attachment; filename=\"" + objectKey + "\"");
+					response.setContentType("application/octet-stream;charset=UTF-8");
 						// 文件以流的方式发送到客户端浏览器
 						os = response.getOutputStream();
 						byte[] buffer = new byte[8096];
@@ -419,11 +457,16 @@ public class MinioClientUtil {
 
 
     public static void main(String[] args) {
-    	ENDPOINT="http://192.168.37.133:9000/";
-    	ACCESS_KEY="toonan";
-    	SECRET_KEY="Toonan2020";
-    	//deleteFile("toonan","202104032159.jpg");
-    	uploadLocalFile("toonan","20210403/202104032159.jpg","E://chenqiyuan.jpg");
+    	ENDPOINT="http://192.168.1.229:9000/";
+    	ACCESS_KEY="minioadmin";
+    	SECRET_KEY="minioadmin";
+    	String base64 = WebplusFile.fromFileToBase64("f:\\ceac1bf0b173ffbbc379ffb3a33767f.jpg");
+    	String objectKey=WebplusId.uuid()+".png";
+    	String bucket=WebplusUtil.getCurrentDate("yyyyMMdd");
+    	String fid=bucket+"_"+objectKey;
+    	System.out.println(fid);
+    	System.out.println(uploadBase64File(bucket,objectKey,base64));
+    	//downloadFile("toonan","ceac1bf0b173ffbbc379ffb3a33767f.jpg","E://ere.png");
     	//System.out.print(getSignedUrl("toonan","20210403/202104032159.jpg",400));
     }
 }

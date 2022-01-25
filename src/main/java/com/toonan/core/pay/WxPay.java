@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +15,7 @@ import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
 import com.toonan.core.util.WebplusHttp;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.util.WebplusXml;
 import com.toonan.core.vo.R;
@@ -114,7 +114,7 @@ public class WxPay {
 		  params.put("appid", appID);
 		  params.put("mch_id",mch_id);
 		  params.put("device_info", "WEB");
-		  params.put("nonce_str", WebplusUtil.uuid());
+		  params.put("nonce_str", WebplusId.uuid());
 		  params.put("body",body);
 		  params.put("out_trade_no", orderId );
 		  String paySwitch=WebplusCache.getParamValue(WebplusCons.PAY_SWITCH_KEY);
@@ -172,7 +172,7 @@ public class WxPay {
 		  params.put("appid", appID);
 		  params.put("mch_id",mch_id);
 		  params.put("device_info", "WEB");
-		  params.put("nonce_str", WebplusUtil.uuid());
+		  params.put("nonce_str", WebplusId.uuid());
 		  params.put("body",body);
 		  params.put("out_trade_no", orderId );
 		  String paySwitch=WebplusCache.getParamValue(WebplusCons.PAY_SWITCH_KEY);
@@ -238,7 +238,7 @@ public class WxPay {
 		  params.put("appid", appID);
 		  params.put("mch_id",mch_id);
 		  params.put("device_info", "WEB");
-		  params.put("nonce_str", WebplusUtil.uuid());
+		  params.put("nonce_str", WebplusId.uuid());
 		  params.put("body", "快递费用");
 		  params.put("out_trade_no", orderId );
 		  String pay_switch=WebplusCache.getParamValue(WebplusCons.PAY_SWITCH_KEY);

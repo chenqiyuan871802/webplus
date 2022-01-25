@@ -25,8 +25,9 @@ import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
-import com.toonan.core.minio.MinioClientUtil;
+import com.toonan.core.minio.WebplusMinio;
 import com.toonan.core.util.WebplusFile;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.R;
 import com.toonan.core.web.BaseController;
@@ -78,7 +79,7 @@ public class FileController extends BaseController{
 				if(WebplusUtil.isNotEmpty(secondBucket)) {
 					objectKey=secondBucket+"/"+fid;
 				}
-				MinioClientUtil.downloadFile(fileBucket, objectKey, response);
+				WebplusMinio.downloadFile(fileBucket, objectKey, response);
 			}
 
 		}
@@ -166,7 +167,7 @@ public class FileController extends BaseController{
 				} else {
 					secondFolder = WebplusUtil.getDateStr("YYYYMM");
 				}
-				String fid = secondFolder + "_" + WebplusUtil.uuid() + "." + fileType;
+				String fid = secondFolder + "_" + WebplusId.uuid() + "." + fileType;
 				String rootPath = WebplusFile.getRootPath();
 				if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
 					String folderPath = rootPath + File.separator + secondFolder;
@@ -175,7 +176,7 @@ public class FileController extends BaseController{
 					file.transferTo(targetFile);
 				} else {
 				    String  objectKey=secondFolder+"/"+fid;
-                    MinioClientUtil.uploadFile(WebplusCons.DEFAULT_BUCKET, objectKey, file);
+                    WebplusMinio.uploadFile(WebplusCons.DEFAULT_BUCKET, objectKey, file);
 				}
 				return R.ok().put("fileName", fileName).put("fid", fid);
 

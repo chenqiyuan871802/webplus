@@ -1,14 +1,26 @@
 package com.toonan.system.controller;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.toonan.core.cache.WebplusCache;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusSqlHelp;
 import com.toonan.core.util.WebplusUtil;
 import com.toonan.core.vo.R;
@@ -18,13 +30,6 @@ import com.toonan.system.constant.SystemCons;
 import com.toonan.system.model.Menu;
 import com.toonan.system.service.MenuService;
 import com.toonan.system.util.SystemCache;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Controller;
 
 /**
  * <p>
@@ -116,7 +121,7 @@ public class MenuController extends BaseController {
 		Date now=WebplusUtil.getDateTime();
 		String curCascadeId=WebplusUtil.createCascadeId(maxCascadeId, 9999);
 		menu.setCascadeId(curCascadeId);
-		menu.setMenuId(WebplusUtil.uuid());
+		menu.setMenuId(WebplusId.uuid());
 		menu.setCreateBy(userId);
 		menu.setUpdateBy(userId);
 		menu.setCreateTime(now);

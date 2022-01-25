@@ -42,7 +42,7 @@ public class WebplusBuilder {
 		gc.setBaseResultMap(true);
 		// XML columList
 		gc.setBaseColumnList(true);
-		gc.setAuthor("肖意");
+		gc.setAuthor("陈骑元");
 		
 		
 		mpg.setGlobalConfig(gc);
@@ -58,21 +58,20 @@ public class WebplusBuilder {
 		DataSourceConfig dsc = new DataSourceConfig();
 		dsc.setDbType(DbType.MYSQL);
 		dsc.setDriverName("com.mysql.jdbc.Driver");
-		dsc.setUsername("toonan");
-		dsc.setPassword("Toonan123#!@#$##1");
-		dsc.setUrl(
-				"jdbc:mysql://192.168.1.229:3306/webpro?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false");
+		dsc.setUsername("root");
+		dsc.setPassword("root");
+		dsc.setUrl("jdbc:mysql://127.0.0.1:3306/webplus?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false");
 		mpg.setDataSource(dsc);
 
 		// 策略配置
 		StrategyConfig strategy = new StrategyConfig();
 		// strategy.setCapitalMode(true);// 全局大写命名 ORACLE 注意
-		strategy.setTablePrefix(new String[] {""});// 此处可以修改为您的表前缀
+		strategy.setTablePrefix(new String[] {"sys_"});// 此处可以修改为您的表前缀
 		// 表名生成策略
 		strategy.setNaming(NamingStrategy.underline_to_camel);// 表名生成策略
 		strategy.setSuperControllerClass("com.toonan.core.web.BaseController");
 		strategy.setSuperEntityClass("com.toonan.core.matatype.impl.BaseModel");
-		strategy.setInclude(new String[] {"mj_lock"}); 
+		strategy.setInclude(new String[] {"sys_custom_dict"}); 
 		mpg.setStrategy(strategy);
 
 		// 包配置
@@ -81,7 +80,7 @@ public class WebplusBuilder {
 		pc.setController("controller");
 		gc.setServiceName("%sService");
 		pc.setEntity("model");
-		pc.setModuleName("business");
+		pc.setModuleName("system");
 		mpg.setPackageInfo(pc);
 
 		// 注入自定义配置，可以在 VM 中使用 cfg.abc 设置的值

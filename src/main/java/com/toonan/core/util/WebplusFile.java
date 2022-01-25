@@ -24,6 +24,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
+import java.util.Base64.Decoder;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -915,7 +916,7 @@ public final class WebplusFile {
 			String filePath=folderPath+File.separator+WebplusCons.EXCEL_PATH;
 			WebplusFile.createFolder(folderPath);
 			String fileType=WebplusFile.getFileType(excelTemplatePath);
-			String fileName=WebplusUtil.uuid()+"."+fileType;
+			String fileName=WebplusId.uuid()+"."+fileType;
 			File file=new File(filePath,fileName);
 			out = new FileOutputStream(file);
 			workbook.write(out);
@@ -1124,6 +1125,33 @@ public final class WebplusFile {
     	 }
     	 return rootPath;
     }
+    
+    /**
+	 * 
+	 * 简要说明：从base64中获取文件流
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2022年1月19日 下午1:55:30 
+	 * @param 说明  base64 字符串参数
+	 * @return 说明
+	 */
+	public static InputStream  getBase64InputStream(String base64) {
+		if (WebplusUtil.isNotEmpty(base64)) {
+			base64 =base64.replaceAll(" ","+");
+			Decoder decoder2 = java.util.Base64.getDecoder();
+			base64 = base64.replace("data:image/jpeg;base64,", "");
+			base64 = base64.replace("data:image/png;base64,", "");
+			base64 = base64.replace("data:image;base64,", "");
+			byte[] buf = decoder2.decode(base64);
+			for (int i = 0; i < buf.length; ++i) {
+				if (buf[i] < 0) {// 调整异常数据
+					buf[i] += 256;
+				}
+			}
+			return byte2InputStream(buf);
+		  }
+
+		return null;
+	}
 	/**
 	 * 测试主应用
 	 * 

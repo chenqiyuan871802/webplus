@@ -6,15 +6,15 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.lang3.StringUtils;
 
 import com.toonan.core.util.WebplusHashCodec;
-import com.toonan.core.util.WebplusUtil;
+import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusXml;
 
 
@@ -226,7 +226,7 @@ public class WxPayment {
 	 * @return Map
 	 */
 	public static Map<String, String> buildSignAfterParasMap(Map<String, String> params, String paternerKey) {
-		params.put("nonce_str", WebplusUtil.uuid2());
+		params.put("nonce_str", WebplusId.uuid2());
 		String sign = WxPayment.createSign(params, paternerKey);
 		params.put("sign", sign);
 		return params;
