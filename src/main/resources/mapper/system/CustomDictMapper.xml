@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.toonan.system.mapper.CustomDictMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.toonan.system.model.CustomDict">
+        <id column="dict_id" property="dictId" />
+        <result column="dict_key" property="dictKey" />
+        <result column="dict_name" property="dictName" />
+        <result column="dict_table" property="dictTable" />
+        <result column="dict_where" property="dictWhere" />
+        <result column="dict_sort_field" property="dictSortField" />
+        <result column="sort_type" property="sortType" />
+        <result column="dict_code_field" property="dictCodeField" />
+        <result column="dict_value_field" property="dictValueField" />
+        <result column="remark" property="remark" />
+        <result column="status" property="status" />
+        <result column="edit_mode" property="editMode" />
+        <result column="create_time" property="createTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_by" property="updateBy" />
+    </resultMap>
+    
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    dict_id AS dictId,dict_key AS dictKey,dict_name AS dictName,dict_table AS dictTable,dict_where AS dictWhere,dict_sort_field AS dictSortField,sort_type AS sortType,dict_code_field AS dictCodeField,dict_value_field AS dictValueField,remark AS remark,status AS status,edit_mode AS editMode,create_time AS createTime,create_by AS createBy,update_time AS updateTime,update_by AS updateBy
+    </sql>
+
+<!-- 根据Dto查询并返回数据持久化对象集合 -->
+	<select id="list" parameterType="Map" resultType="com.toonan.system.model.CustomDict">
+		SELECT
+			<include refid="Base_Column_List" />	
+		FROM sys_custom_dict
+		<where>
+		    <include refid="equal" />
+		</where>
+		<if test="_order != null and _order != ''">
+		     ORDER BY ${_order}
+		</if>			
+	</select>
+
+	<!-- 根据Dto查询并返回分页数据持久化对象集合 -->
+	<select id="listPage" parameterType="Map" resultType="com.toonan.system.model.CustomDict" useCache="false">
+	    SELECT
+			<include refid="Base_Column_List" />	
+		FROM sys_custom_dict
+		<where>
+		    <include refid="equal" />
+		</where>	
+		<if test="_order != null and _order != ''">
+		     ORDER BY ${_order}
+		</if>		
+	</select>
+	
+	<!-- 根据Dto模糊查询并返回数据持久化对象集合(字符型字段模糊匹配，其余字段精确匹配) -->
+	<select id="like" parameterType="Map" resultType="com.toonan.system.model.CustomDict">
+		SELECT
+			<include refid="Base_Column_List" />	
+		FROM sys_custom_dict
+		<where>
+		    <include refid="like" />
+		</where>
+		<if test="_order != null and _order != ''">
+		     ORDER BY ${_order}
+		</if>			
+	</select>
+
+	<!-- 根据Dto模糊查询并返回分页数据持久化对象集合(字符型字段模糊匹配，其余字段精确匹配) -->
+	<select id="likePage" parameterType="Map" resultType="com.toonan.system.model.CustomDict" useCache="false">
+	    SELECT
+			<include refid="Base_Column_List" />	
+		FROM sys_custom_dict
+		<where>
+		    <include refid="like" />
+		</where>
+		<if test="_order != null and _order != ''">
+		     ORDER BY ${_order}
+		</if>			
+	</select>
+	<!-- 根据数学表达式进行数学运算 -->
+	<select id="calc" parameterType="Map" resultType="String">
+		SELECT
+			${_expr}
+		FROM sys_custom_dict
+		<where>
+		    <include refid="equal" />
+		</where>
+	</select>
+    <!-- Where精确匹配字段 -->
+    <sql id="equal">
+        <if test="dictId != null and dictId != ''">
+             AND dict_id = #{dictId}  <!-- 字典编号 -->
+		</if>
+        <if test="dictKey != null and dictKey != ''">
+             AND dict_key = #{dictKey}  <!-- 字典健 -->
+		</if>
+        <if test="dictName != null and dictName != ''">
+             AND dict_name = #{dictName}  <!-- 字典名称 -->
+		</if>
+        <if test="dictTable != null and dictTable != ''">
+             AND dict_table = #{dictTable}  <!-- 字典表 -->
+		</if>
+        <if test="dictWhere != null and dictWhere != ''">
+             AND dict_where = #{dictWhere}  <!-- 字典条件 -->
+		</if>
+        <if test="dictSortField != null and dictSortField != ''">
+             AND dict_sort_field = #{dictSortField}  <!-- 字典排序字典 -->
+		</if>
+        <if test="sortType != null and sortType != ''">
+             AND sort_type = #{sortType}  <!-- 排序类型 1升序2降序 -->
+		</if>
+        <if test="dictCodeField != null and dictCodeField != ''">
+             AND dict_code_field = #{dictCodeField}  <!-- 字典代码字典 -->
+		</if>
+        <if test="dictValueField != null and dictValueField != ''">
+             AND dict_value_field = #{dictValueField}  <!-- 字典值字字段 -->
+		</if>
+        <if test="remark != null and remark != ''">
+             AND remark = #{remark}  <!-- 备注 -->
+		</if>
+        <if test="status != null and status != ''">
+             AND status = #{status}  <!-- 当前状态(0:停用;1:启用) -->
+		</if>
+        <if test="editMode != null and editMode != ''">
+             AND edit_mode = #{editMode}  <!-- 编辑模式(0:只读;1:可编辑) -->
+		</if>
+        <if test="createTime != null ">
+             AND create_time = #{createTime}  <!-- 创建时间 -->
+		</if>
+        <if test="createBy != null and createBy != ''">
+             AND create_by = #{createBy}  <!-- 创建用户 -->
+		</if>
+        <if test="updateTime != null ">
+             AND update_time = #{updateTime}  <!-- 修改时间 -->
+		</if>
+        <if test="updateBy != null and updateBy != ''">
+             AND update_by = #{updateBy}  <!-- 修改用户 -->
+		</if>
+    </sql>
+
+
+
+    <!-- Where模糊匹配字段 -->
+    <sql id="like">
+        <if test="dictId != null and dictId != ''">
+		      AND dict_id LIKE '%${dictId}%'  <!-- 字典编号 -->
+		</if>
+        <if test="dictKey != null and dictKey != ''">
+		      AND dict_key LIKE '%${dictKey}%'  <!-- 字典健 -->
+		</if>
+        <if test="dictName != null and dictName != ''">
+		      AND dict_name LIKE '%${dictName}%'  <!-- 字典名称 -->
+		</if>
+        <if test="dictTable != null and dictTable != ''">
+		      AND dict_table LIKE '%${dictTable}%'  <!-- 字典表 -->
+		</if>
+        <if test="dictWhere != null and dictWhere != ''">
+		      AND dict_where LIKE '%${dictWhere}%'  <!-- 字典条件 -->
+		</if>
+        <if test="dictSortField != null and dictSortField != ''">
+		      AND dict_sort_field LIKE '%${dictSortField}%'  <!-- 字典排序字典 -->
+		</if>
+        <if test="sortType != null and sortType != ''">
+		      AND sort_type LIKE '%${sortType}%'  <!-- 排序类型 1升序2降序 -->
+		</if>
+        <if test="dictCodeField != null and dictCodeField != ''">
+		      AND dict_code_field LIKE '%${dictCodeField}%'  <!-- 字典代码字典 -->
+		</if>
+        <if test="dictValueField != null and dictValueField != ''">
+		      AND dict_value_field LIKE '%${dictValueField}%'  <!-- 字典值字字段 -->
+		</if>
+        <if test="remark != null and remark != ''">
+		      AND remark LIKE '%${remark}%'  <!-- 备注 -->
+		</if>
+        <if test="status != null and status != ''">
+		      AND status LIKE '%${status}%'  <!-- 当前状态(0:停用;1:启用) -->
+		</if>
+        <if test="editMode != null and editMode != ''">
+		      AND edit_mode LIKE '%${editMode}%'  <!-- 编辑模式(0:只读;1:可编辑) -->
+		</if>
+        <if test="createBy != null and createBy != ''">
+		      AND create_by LIKE '%${createBy}%'  <!-- 创建用户 -->
+		</if>
+        <if test="updateBy != null and updateBy != ''">
+		      AND update_by LIKE '%${updateBy}%'  <!-- 修改用户 -->
+		</if>
+    </sql>
+
+</mapper>
