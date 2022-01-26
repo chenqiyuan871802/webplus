@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.baomidou.mybatisplus.plugins.Page;
 import com.toonan.core.cache.WebplusCache;
+import com.toonan.core.common.WebplusCommon;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
@@ -141,7 +142,7 @@ public class ApkVersionController extends BaseController {
 		ApkVersion apkVersion=apkVersionService.selectById(id);
 		boolean result = apkVersionService.deleteById(id);
 		if (result) {
-			String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
+			String rootPath=WebplusCache.getParamValue(WebplusCons.WINDOWS_SAVE_ROOT_PATH_KEY);
 			String filePath=rootPath+File.separator+WebplusCons.APK_PATH+File.separator+apkVersion.getFid();
 			WebplusFile.deleteFile(filePath);
 			return R.ok();
@@ -166,7 +167,7 @@ public class ApkVersionController extends BaseController {
 		if(WebplusUtil.isNotEmpty(file)&&file.getSize()>0){
 			
 			try {
-				String rootPath=WebplusFile.getRootPath();
+				String rootPath=WebplusCommon.getRootPath();
 				String folderPath=rootPath+File.separator+WebplusCons.APK_PATH;
 				String apkName=file.getOriginalFilename();
 				String apkFileName=WebplusId.uuid()+"."+WebplusFile.getFileType(apkName);
@@ -201,7 +202,7 @@ public class ApkVersionController extends BaseController {
 			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
 			
 			String qrcodeImage=WebplusCons.QRCODE_PATH+"_"+apkVersion.getVersionId()+".png";
-			String rootPath=WebplusFile.getRootPath();
+			String rootPath=WebplusCommon.getRootPath();
 			String qrcodeUrl = WebplusCache.getParamValue(WebplusCons.REQUEST_URL_KEY) + "/system/file/downloadApk?fid="
 					+apkVersion.getFid();
 			if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {

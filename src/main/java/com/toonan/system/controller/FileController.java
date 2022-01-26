@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import com.toonan.core.cache.WebplusCache;
+import com.toonan.core.common.WebplusCommon;
 import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.matatype.Dto;
 import com.toonan.core.matatype.Dtos;
@@ -55,70 +56,20 @@ public class FileController extends BaseController{
 	 */
 	@RequestMapping(value = "showImage")
 	public void showImage(String fid,String fileBucket,HttpServletRequest request,HttpServletResponse response) {
-		
-		if (WebplusUtil.isNotEmpty(fid)) {
-			int len=fid.indexOf("_");
-			String secondBucket="";
-            if(len>-1) {
-            	secondBucket=fid.substring(0,len);
-            }
-			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
-			if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
-				String folderPath = WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
-				String filePath = folderPath + File.separator +secondBucket + File.separator + fid;
-				File file = new File(filePath);
-				if (file.exists()) {
-					WebplusFile.downloadFile(request, response, filePath, fid);
-				}
-
-			} else {
-				if (WebplusUtil.isEmpty(fileBucket)) {
-					fileBucket = WebplusCons.DEFAULT_BUCKET;
-				}
-				String objectKey=fid;
-				if(WebplusUtil.isNotEmpty(secondBucket)) {
-					objectKey=secondBucket+"/"+fid;
-				}
-				WebplusMinio.downloadFile(fileBucket, objectKey, response);
-			}
-
-		}
-		
+	     
+		WebplusCommon.downloadFile(fid, "", request, response);
 	}
 	/**
 	 * 
 	 * 简要说明：下载文件
 	 * 编写者：陈骑元
 	 * 创建时间：2019年8月26日 下午5:55:50
-	 * @param 说明
+	 * @param 说明  fid 文件fid,fileName下载文件名
 	 * @return 说明
 	 */
 	@RequestMapping(value = "downloadFile")
-	public  void downloadFile(String fileName,HttpServletRequest request,HttpServletResponse response){
-		if(WebplusUtil.isNotEmpty(fileName)){
-			String folderPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY	);
-			String filePath=folderPath+File.separator+WebplusCons.FILE_PATH+File.separator+fileName;;
-			
-			WebplusFile.downloadFile(request, response,  filePath, fileName);
-		}
-	}
-	/**
-	 * 
-	 * 简要说明：下载APK方法
-	 * 编写者：陈骑元
-	 * 创建时间：2019年10月25日 下午11:03:57
-	 * @param 说明
-	 * @return 说明
-	 */
-	@RequestMapping(value = "downloadApk")
-	public void downloadApk(String fid,HttpServletRequest request,HttpServletResponse response) {
-		
-		if(WebplusUtil.isNotEmpty(fid)){
-			String folderPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY	);
-			String filePath=folderPath+File.separator+WebplusCons.APK_PATH+File.separator+fid	;
-			WebplusFile.downloadFile(request, response,  filePath, fid);
-		}
-		
+	public  void downloadFile(String fid,String fileName,HttpServletRequest request,HttpServletResponse response){
+		WebplusCommon.downloadFile(fid, fileName, request, response);
 	}
 	/**
 	 * 
@@ -168,7 +119,7 @@ public class FileController extends BaseController{
 					secondFolder = WebplusUtil.getDateStr("YYYYMM");
 				}
 				String fid = secondFolder + "_" + WebplusId.uuid() + "." + fileType;
-				String rootPath = WebplusFile.getRootPath();
+				String rootPath = WebplusCommon.getRootPath();
 				if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {
 					String folderPath = rootPath + File.separator + secondFolder;
 					WebplusFile.createFolder(folderPath);
@@ -207,7 +158,7 @@ public class FileController extends BaseController{
 			if (multipartResolver.isMultipart(request)) {
 				MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 				Iterator<String> fileForms = multipartRequest.getFileNames();
-				String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
+				String rootPath=WebplusCache.getParamValue(WebplusCons.LINUX_SAVE_ROOT_PATH_KEY);
 				String folderPath=rootPath+File.separator+WebplusCons.IMAGE_PATH;
 				
 				List<Dto> dataList=Lists.newArrayList();
@@ -249,7 +200,7 @@ public class FileController extends BaseController{
 	@RequestMapping(value = "downloadExcelFile")
 	public  void downloadExcelFile(String fid,String fileName,HttpServletRequest request,HttpServletResponse response){
 		if(WebplusUtil.isNotEmpty(fid)){
-			String folderPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY	);
+			String folderPath=WebplusCache.getParamValue(WebplusCons.WINDOWS_SAVE_ROOT_PATH_KEY	);
 			String filePath=folderPath+File.separator+WebplusCons.EXCEL_PATH+File.separator+fid;;
 			if(WebplusUtil.isEmpty(fileName)){
 				fileName=fid;

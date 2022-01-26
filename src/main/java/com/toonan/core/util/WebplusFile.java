@@ -912,7 +912,7 @@ public final class WebplusFile {
 		try {
 			TemplateExportParams params = new TemplateExportParams(excelTemplatePath);
 			 workbook = ExcelExportUtil.exportExcel(params, dataDto);
-			String folderPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY	);
+			String folderPath=WebplusCache.getParamValue(WebplusCons.WINDOWS_SAVE_ROOT_PATH_KEY	);
 			String filePath=folderPath+File.separator+WebplusCons.EXCEL_PATH;
 			WebplusFile.createFolder(folderPath);
 			String fileType=WebplusFile.getFileType(excelTemplatePath);
@@ -1101,31 +1101,7 @@ public final class WebplusFile {
         return byteArrayOutputStream.toByteArray();
     }
     
-    /**
-     * 
-     * 简要说明：获取文件保存根路径,如果不存在则使用默认
-     * 编写者：陈骑元（chenqiyuan@toonan.com）
-     * 创建时间： 2021年8月9日 下午10:22:07 
-     * @param 说明
-     * @return 说明
-     */
-    public static String getRootPath() {
-    	 String rootPath=WebplusCache.getParamValue(WebplusCons.SAVE_ROOT_PATH_KEY);
-    	 if(WebplusUtil.isEmpty(rootPath)) {
-    		 String system = System.getProperty("os.name");  
-    		 if(system.toLowerCase().startsWith("win")){  
-    			 rootPath=WebplusCons.WINDOWS_ROOT_PATH;
-    		 }else {
-    			 rootPath=WebplusCons.LINUX_ROOT_PATH;
-    		 }
-    	 }
-    	 File file=new File(rootPath);
-    	 if(!file.exists()) {   //文件夹不存在，则创建
-    		 createFolder(rootPath);
-    	 }
-    	 return rootPath;
-    }
-    
+  
     /**
 	 * 
 	 * 简要说明：从base64中获取文件流

@@ -2664,6 +2664,22 @@ public class WebplusUtil {
         address = region + " " + city;
         return address;
     }
+    /**
+     * 
+     * 简要说明：判断当前系统是否windows
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2022年1月26日 下午9:54:37 
+     * @param 说明
+     * @return 说明
+     */
+    public static boolean isWindows() {
+    	String os=System.getProperty("os.name").toLowerCase();
+    	if(os.indexOf("win")>-1) {
+    		
+    		return true;
+    	}
+    	return false;
+    }
 	/**
 	 * 测试
 	 * 
@@ -2671,8 +2687,14 @@ public class WebplusUtil {
 	 * @throws ParseException
 	 */
 	public static void main(String args[]) throws ParseException {
-		String str="sfwerwrewsfsfsfs";
-		System.out.println(WebplusId.getIdStr());
+		String fid="apk_sfwerwrewsfsfsfs.apk";
+		int len=fid.indexOf("_");
+		String secondBucket="";
+        if(len>-1) {
+        	secondBucket=fid.substring(0,len);
+        	fid=fid.substring(len+1);
+        	System.out.println(fid);
+        }
 		
 	}
 	

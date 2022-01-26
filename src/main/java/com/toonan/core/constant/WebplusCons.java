@@ -12,7 +12,7 @@ public interface WebplusCons {
 	/**
 	 * 默认文件桶
 	 */
-	public static final String DEFAULT_BUCKET="toonan";
+	public static final String DEFAULT_BUCKET="webplus";
 	
 	/**
 	 * 文件服务器
@@ -26,8 +26,8 @@ public interface WebplusCons {
 	/**
 	 * 默认的window环境和linux环境
 	 */
-	public static final String WINDOWS_ROOT_PATH="C://toonan/";
-	public static final String LINUX_ROOT_PATH="/toonan/";
+	public static final String WINDOWS_ROOT_PATH="C://webplus/";
+	public static final String LINUX_ROOT_PATH="/webplus/";
     /**
      * 令牌前缀
      */
@@ -47,9 +47,13 @@ public interface WebplusCons {
 	public static final String REQUEST_URL_KEY="request_url";
 	
 	/**
-	 * 文件保存跟路径
+	 * windows默认保存文件
 	 */
-	public static final String SAVE_ROOT_PATH_KEY="save_root_path";
+	public static final String WINDOWS_SAVE_ROOT_PATH_KEY="windows_save_root_path";
+	/**
+	 * linux默认保存文件
+	 */
+	public static final String LINUX_SAVE_ROOT_PATH_KEY="linux_save_root_path";
 	/**
 	 * 保存文件的方式
 	 */
