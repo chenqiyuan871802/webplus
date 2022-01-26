@@ -80,5 +80,37 @@ public class WebplusCommon {
 			}
 		}
 	}
+	/**
+	 * 
+	 * 简要说明：根据文件fid删除文件
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2022年1月26日 下午10:32:19 
+	 * @param 说明  fid 文件fid
+	 * @return 说明
+	 */
+	public boolean deleteFile(String fid) {
+		if(WebplusUtil.isNotEmpty(fid)) {
+			String saveFileWay = WebplusCache.getParamValue(WebplusCons.SAVE_FILE_WAY_KEY);
+			int len=fid.indexOf("_");
+		    //存储的业务桶和文件层
+			String bussBucket="";
+            if(len>-1) {
+            	bussBucket=fid.substring(0,len);
+            	fid=fid.substring(len+1);
+            }else {
+            	bussBucket=WebplusCons.DEFAULT_BUCKET;
+            }
+            if (WebplusCons.SAVE_FILE_WAY_LOCAL.equals(saveFileWay)) {  //文件存储的方式
+				String folderPath = WebplusCommon.getRootPath();
+				String filePath = folderPath + File.separator +bussBucket + File.separator + fid;
+				
+				return WebplusFile.deleteFile(filePath);
+			}else {
+			    return WebplusMinio.deleteFile(bussBucket, fid);
+				
+			}
+		}
+		return false;
+	}
 
 }
