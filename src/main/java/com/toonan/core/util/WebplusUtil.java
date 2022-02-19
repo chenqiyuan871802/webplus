@@ -53,6 +53,8 @@ import com.toonan.core.matatype.Dtos;
 import com.toonan.core.matatype.impl.BaseModel;
 import com.toonan.core.matatype.impl.HashDto;
 
+import cn.hutool.core.util.RandomUtil;
+
 /**
  * <b>辅助工具类</b>
  * 
@@ -2687,15 +2689,7 @@ public class WebplusUtil {
 	 * @throws ParseException
 	 */
 	public static void main(String args[]) throws ParseException {
-		String fid="apk_sfwerwrewsfsfsfs.apk";
-		int len=fid.indexOf("_");
-		String secondBucket="";
-        if(len>-1) {
-        	secondBucket=fid.substring(0,len);
-        	fid=fid.substring(len+1);
-        	System.out.println(fid);
-        }
-		
+		System.out.println(RandomUtil.randomStringUpper(8));
 	}
 	
 	

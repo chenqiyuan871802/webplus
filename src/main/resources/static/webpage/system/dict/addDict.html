@@ -79,16 +79,11 @@
     		
 		},function(){
 			// 根据id拿到最新数据
-			webplus.doEditAjax({
-				url:'system/dict/addDict',
-				params:{id:webplus.getUrlType().id},
-				callback:function(res){
-					if(webplus.isEmpty(res.data)) return false;
-					// 处理后的数据赋值
-					
-					webplus.setFormData("saveForm",res.data);
-				}
-			});
+			webplus.doAjax('mongo/dict/addDict',{id:webplus.getUrlType().id},'','0','',function(res){
+				if(webplus.isEmpty(res.data)) return false;
+				// 处理后的数据赋值
+				webplus.setFormData("saveForm",res.data);
+			})
 		});
 		
 	});
