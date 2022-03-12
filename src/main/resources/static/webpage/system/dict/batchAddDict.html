@@ -55,15 +55,11 @@
 	}).use([ 'form','webplus' ], function() {
 	    var webplus=layui.webplus;
 	 // 根据id拿到最新数据
-		webplus.doEditAjax({
-			url:'system/dict/addDict',
-			params:{id:webplus.getUrlType().id},
-			callback:function(res){
+			webplus.doAjax('mongo/dict/addDict',{id:webplus.getUrlType().id},'','0','',function(res){
 				if(webplus.isEmpty(res.data)) return false;
 				// 处理后的数据赋值
-				
 				webplus.setFormData("saveForm",res.data);
-			}
+			})
 		});
 		webplus.initForm('system/dict/batchSaveDict','','',function(data){
 		 webplus.reloadTable('1','submitDict'); //刷新父页面的table
