@@ -9,6 +9,8 @@ package com.toonan.core.constant;
  */
 public interface WebplusCons {
 	
+	
+	
 	/**
 	 * 默认文件桶
 	 */

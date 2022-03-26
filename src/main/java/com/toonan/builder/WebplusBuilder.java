@@ -71,7 +71,7 @@ public class WebplusBuilder {
 		strategy.setNaming(NamingStrategy.underline_to_camel);// 表名生成策略
 		strategy.setSuperControllerClass("com.toonan.core.web.BaseController");
 		strategy.setSuperEntityClass("com.toonan.core.matatype.impl.BaseModel");
-		strategy.setInclude(new String[] {"sys_custom_dict"}); 
+		strategy.setInclude(new String[] {"sys_app_config"}); 
 		mpg.setStrategy(strategy);
 
 		// 包配置

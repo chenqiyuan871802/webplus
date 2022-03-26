@@ -1128,6 +1128,100 @@ public final class WebplusFile {
 
 		return null;
 	}
+	
+	/**
+	 * 
+	 * 简要说明：从网络文件中转base64为
+	 * 编写者：陈骑元
+	 * 创建时间：2019年1月10日 下午6:43:19
+	 * @param 说明
+	 * @return 说明
+	 */
+	public static byte[] fromFileUrlToByteArray(String fileUrl) {
+		InputStream inputStream = null;
+		ByteArrayOutputStream bos = null;
+		try {
+			URL url = new URL(fileUrl);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			// 设置超时间为3秒
+			conn.setConnectTimeout(10 * 1000);
+			// 防止屏蔽程序抓取而返回403错误
+			conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+			// 得到输入流
+			inputStream = conn.getInputStream();
+			byte[] buffer = new byte[1024];
+			int len = 0;
+			bos = new ByteArrayOutputStream();
+			while ((len = inputStream.read(buffer)) != -1) {
+				bos.write(buffer, 0, len);
+			}
+			byte[] byteArray = bos.toByteArray();
+			return byteArray;
+
+		} catch (Exception e) {
+			logger.info("从网络文件转Base64失败:" + e);
+		} finally {
+			if (bos != null) {
+				try {
+					bos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return null;
+	}
+	/**
+	 * 
+	 * 简要说明：从输入流转文件base64
+	 * 编写者：陈骑元（chenqiyuan@toonan.com）
+	 * 创建时间： 2022年2月14日 上午10:37:10 
+	 * @param 说明 inputStream文件输入流
+	 * @return 说明
+	 */
+	public static String fromInputStreamToBase64(InputStream inputStream) {
+		if(WebplusUtil.isNotEmpty(inputStream)) {
+			ByteArrayOutputStream bos = null;
+			try {
+				
+				byte[] buffer = new byte[1024];
+				int len = 0;
+				bos = new ByteArrayOutputStream();
+				while ((len = inputStream.read(buffer)) != -1) {
+					bos.write(buffer, 0, len);
+				}
+				byte[] byteArray = bos.toByteArray();
+				return new String(Base64.encodeBase64(byteArray));
+			} catch (Exception e) {
+				logger.info(" 输入流转Base64失败:" + e);
+			}finally {
+				if (bos != null) {
+					try {
+						bos.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		}
+		return "";
+	}
 	/**
 	 * 测试主应用
 	 * 

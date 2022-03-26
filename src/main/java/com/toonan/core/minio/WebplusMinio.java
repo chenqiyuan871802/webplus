@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toonan.core.constant.WebplusCons;
 import com.toonan.core.util.WebplusFile;
 import com.toonan.core.util.WebplusId;
 import com.toonan.core.util.WebplusQrcode;
@@ -171,7 +172,26 @@ public class WebplusMinio {
 		}
         return "";
     }
-    
+    /**
+     * 
+     * 简要说明：上传url的文件
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2022年3月3日 下午5:52:42 
+     * @param 说明
+     * @return 说明
+     */
+    public static boolean uploadFileUrl(String bucket, String objectKey,String fileUrl) {
+    	if(WebplusUtil.isNotEmpty(fileUrl)) {
+    		byte[] byteArray=WebplusFile.fromFileUrlToByteArray(fileUrl);
+    		if(WebplusUtil.isNotEmpty(byteArray)) {
+    			InputStream inputStream=WebplusFile.byte2InputStream(byteArray);
+    			return uploadInputStream(bucket,objectKey,inputStream);
+    		}
+    		
+    		
+    	}
+    	return false;
+    }
     
     /**
 	 * 
@@ -351,6 +371,43 @@ public class WebplusMinio {
 	      }
 	      log.error("下载文件没有文件流返回");
 	      return false;
+    }
+    /**
+     * 
+     * 简要说明：通过文件fid进行base64转换
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2022年2月14日 上午10:48:47 
+     * @param 说明
+     * @return 说明
+     */
+    public static String downloadFileBase64(String fid) {
+    	if(WebplusUtil.isNotEmpty(fid)) {
+    		int  index=fid.indexOf("_");
+    		if(index>-1) {
+    			 String bucket=fid.substring(0,index);
+    			 String objctkey=fid.substring(index+1);
+    			 return downloadFileBase64(bucket,objctkey);
+    		}else {
+    			
+    			return downloadFileBase64(WebplusCons.DEFAULT_BUCKET,fid);
+    		}
+    	}
+    	return "";
+    }
+    /**
+     * 
+     * 简要说明：获取文件的base64
+     * 编写者：陈骑元（chenqiyuan@toonan.com）
+     * 创建时间： 2022年2月14日 上午10:32:41 
+     * @param 说明
+     * @return 说明
+     */
+    public static String downloadFileBase64(String bucket, String objectKey) {
+    	InputStream inputStream=downloadFile(bucket,objectKey);
+    	if(WebplusUtil.isNotEmpty(inputStream)) {
+    		return WebplusFile.fromInputStreamToBase64(inputStream);
+    	}
+    	return null;
     }
     /**
      * 简要说明： 下载文件存储在指定位置
